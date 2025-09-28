@@ -1,12 +1,13 @@
 <template>
     <div class="d-flex justify-center align-center" style="height: 60vh;">
   <v-sheet  width="350" height="450" :elevation="16">
-    <v-form validate-on="submit lazy" @submit.prevent="submit">
+    <v-alert text="Couldn't login" v-model="logAlert" type="error"></v-alert>
+    <v-form ref="form" fast-fail @submit.prevent="submit">
       <v-text-field
         class="mt-10 mx-auto"
         width="320"
         v-model="userName"
-        :rules="rules"
+        :rules="userNameRules"
         label="Username"
         style="min-width: 50px; display: block;"
       ></v-text-field>
@@ -14,8 +15,8 @@
         <v-text-field
        class="mx-auto"
         width="320"
-        v-model="userEmail"
-        :rules="rules"
+        v-model="userPassword"
+        :rules="passwordRules"
         style="min-width: 50px; display: block;"
         label="Password"
       ></v-text-field>
@@ -58,31 +59,40 @@
 <script setup>
     import router from '@/router/router'
     import { ref } from 'vue'
-    const rules = [value => checkApi(value)]
-
+    const form = ref()
+    const logAlert = ref(false)
     const loading = ref(false)
     const userName = ref('')
     const userPassword = ref('')
+
     async function submit (event) {
-        alert('api Login')
-        loading.value = true
-        const results = await event
-        loading.value = false
-        
-    }
+         const { valid } = await form.value.validate()
 
-    let timeout = -1
+        if (valid) {
+          loading.value = true
+          const results = await event
+          loading.value = false
+          alert(JSON.stringify({username: userName.value, password: userPassword.value})) 
+          router.push('/')
+        }
+        else {
+          logAlert.value = !logAlert.value
+        }
+       
+      }
+
    
-    async function checkApi (userName) {
-      alert('apiLogin')
-        return new Promise(resolve => {
-        clearTimeout(timeout)
-
-        timeout = setTimeout(() => {
-            if (!userName) return resolve('Please enter a user name.')
-                if (userName === 'johnleider') return resolve('User name already taken. Please try another one.')
-                    return resolve(true)
-                }, 1000)
-                })
+    const userNameRules = [
+    value => {
+      if (value?.length >= 3) return true
+      return 'Username must be at least 3 characters.'
     }
+   ]
+
+  const passwordRules = [
+    value => {
+     if (value?.length >= 3) return true
+      return 'Password must be at least 3 characters.'
+    }
+  ]
 </script>

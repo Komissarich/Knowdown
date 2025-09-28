@@ -1,35 +1,38 @@
 <template>
+    
     <div class="d-flex justify-center align-center" style="height: 60vh;">
-  <v-sheet  width="350" height="450" :elevation="16">
-    <v-form validate-on="submit lazy" @submit.prevent="submit">
-      <v-text-field
+  <VSheet width="350" height="485" :elevation="16">
+    <v-alert text="Coulnd't register user" v-model="regAlert" type="error"></v-alert>
+    
+    <VForm ref="form" fast-fail  @submit.prevent="submit">
+      <VTextField
         class="mt-10 mx-auto"
         width="320"
         v-model="userName"
-        :rules="rules"
+        :rules="userNameRules"
         label="Username"
         style="min-width: 50px; display: block;"
-      ></v-text-field>
+      ></VTextField>
 
-        <v-text-field
+        <VTextField
        class="mx-auto"
         width="320"
         v-model="userEmail"
-        :rules="rules"
+        :rules="emailRules"
         style="min-width: 50px; display: block;"
         label="Email"
-      ></v-text-field>
+      ></VTextField>
 
-       <v-text-field
+       <VTextField
        class="mx-auto"
         width="320"
         v-model="userPassword"
-        :rules="rules"
+        :rules="passwordRules"
         style="min-width: 50px; display: block;"
         label="Password"
-      ></v-text-field>
+      ></VTextField>
 
-      <v-btn
+      <VBtn
         :loading="loading"
         class="mt-2 mx-auto"
         color="green-lighten-1"
@@ -38,11 +41,11 @@
         style="min-width: 140px;display: block;"
         rounded="lg"
         block
-      ></v-btn>
-    </v-form>
+      ></VBtn>
+    </VForm>
     <div class="d-flex flex-column justify-center align-center">
         <p class="ma-4 ">Already have an account?</p>
-        <v-btn
+        <VBtn
         class="text-none mb-4"
         
         color="indigo-darken-3"
@@ -54,10 +57,10 @@
         @click="router.push('/login')"
       >
         LOG IN
-      </v-btn>
+      </VBtn>
     </div>
    
-  </v-sheet>
+  </VSheet>
   </div>
 </template>
 
@@ -66,32 +69,53 @@
 <script setup>
     import router from '@/router/router'
     import { ref } from 'vue'
-    const rules = [value => checkApi(value)]
+    import { VBtn, VForm, VSheet, VTextField } from 'vuetify/components'
 
+    
+    const form = ref()
     const loading = ref(false)
     const userName = ref('')
     const userPassword = ref('')
     const userEmail = ref('')
+    const regAlert = ref(false) 
+
+   
     async function submit (event) {
-      alert('api Register')
-        loading.value = true
-        const results = await event
-        loading.value = false
-        
-    }
+         const { valid } = await form.value.validate()
 
-    let timeout = -1
-    async function checkApi (userName) {
-     
+        if (valid) {
+          loading.value = true
+          const results = await event
+          loading.value = false
+          alert(JSON.stringify({username: userName.value, password: userPassword.value, email: userEmail.value})) 
+        //  router.push('/')
+        }
+        else {
+          regAlert.value = !regAlert.value
+        }
        
-        return new Promise(resolve => {
-        clearTimeout(timeout)
+      }
 
-        timeout = setTimeout(() => {
-            if (!userName) return resolve('Please enter a user name.')
-                if (userName === 'johnleider') return resolve('User name already taken. Please try another one.')
-                    return resolve(true)
-                }, 1000)
-                })
+   
+
+    const userNameRules = [
+    value => {
+      if (value?.length >= 3) return true
+      return 'Username must be at least 3 characters.'
     }
+   ]
+
+ 
+  const emailRules = [
+    value => {
+      if (/.+@.+\..+/.test(value)) return true
+      return 'E-mail must be valid.'
+    }
+  ]
+  const passwordRules = [
+    value => {
+     if (value?.length >= 3) return true
+      return 'Password must be at least 3 characters.'
+    }
+  ]
 </script>
