@@ -54,7 +54,7 @@
         
         style="min-width: 140px;"
         rounded="lg"
-        @click="router.push('/login')"
+        @click="router.push('/auth/login')"
       >
         LOG IN
       </VBtn>

@@ -9,8 +9,8 @@
         </router-link>
         </VToolbarTitle>
         <VBtn variant="text" icon="mdi-chart-box-outline" @click="router.push('/statistics')"> </VBtn>
-        <VBtn icon="mdi-magnify" variant="text" @click="router.push('/search')"></VBtn>
-        <VBtn variant="text" icon="mdi-account" @click="router.push('/register')"> </VBtn>
+        <VBtn icon="mdi-magnify" variant="text" @click="router.push('/game/search')"></VBtn>
+        <VBtn variant="text" icon="mdi-account" @click="router.push('/users/me')"> </VBtn>
         
      </VAppBar>
 
@@ -21,7 +21,7 @@
       >
         <VListItem
           link
-          to="/me"
+          to="/users/me"
           prepend-avatar="https://randomuser.me/api/portraits/men/78.jpg"
           title="John Doe"
         ></VListItem>
@@ -29,13 +29,13 @@
         <VDivider></VDivider>
         <VListItem
           link
-          to="/search"
+          to="/game/search"
           prepend-icon="mdi-magnify"
           title="Search game"
         ></VListItem>
          <VListItem
           link
-          to="/lobby"
+          to="/game/create"
           prepend-icon="mdi-dice-3-outline"
           title="Create game"
         ></VListItem>

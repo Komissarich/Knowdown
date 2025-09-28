@@ -31,7 +31,7 @@
         color="green-lighten-1"
         style="min-width: 140px;display: block;"
         rounded="lg"
-        @click="router.push('/login')"
+       
       ></v-btn>
     </v-form>
     <div class="d-flex flex-column justify-center align-center">
@@ -45,7 +45,7 @@
         
         style="min-width: 140px;"
         rounded="lg"
-        @click="router.push('/register')"
+        @click="router.push('/auth/register')"
       >
         REGISTER
       </v-btn>

@@ -19,7 +19,7 @@ const routes = [
   { path: '/statistics', component: Statistics, meta: {requireAuth: true}},
   { path: '/game/lobby/:lobby_id', component: Lobby, meta: {requireAuth: true}},
   { path: '/game/search', component: SearchLobby, meta: {requireAuth: true} },
-  { path: '/game/create_game', component: CreateLobby, meta: {requireAuth: true}},
+  { path: '/game/create', component: CreateLobby, meta: {requireAuth: true}},
   { path: '/users/me', component: Me, meta: {requireAuth: true}},
   { path: '/users/:id', component: Profile, meta: {requireAuth: true}},
 
@@ -38,12 +38,12 @@ router.beforeEach((to, from, next) => {
         next()
     }
   else {
-    next()
+    
     const store = useUserStore();
    
     if (to.meta.requireAuth == true && store.isLogged == false) {
-      
-          return next({ path: "/login" })
+
+          return next({ path: "/auth/login" })
     }
     next()
   }

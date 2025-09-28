@@ -17,7 +17,7 @@ export const useUserStore = defineStore('counter', () => {
         this.isLogged = true
         this.username = name
     }
-    function logout(name) {
+    function logout() {
         this.isLogged = false
     }
   

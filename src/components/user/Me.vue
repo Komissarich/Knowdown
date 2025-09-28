@@ -1,3 +1,17 @@
 <template>
 <p>Profile</p>
+<VBtn @click="logout" color="red">Logout</VBtn>
 </template>
+
+<script setup>
+import { useUserStore } from '@/stores/user';
+import { VBtn } from 'vuetify/components';
+
+
+const userStore = useUserStore()
+
+function logout() {
+    userStore.logout()
+    console.log(userStore.isLogged)
+}
+</script>
