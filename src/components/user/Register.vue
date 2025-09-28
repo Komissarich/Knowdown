@@ -15,7 +15,7 @@
       ></VTextField>
 
         <VTextField
-       class="mx-auto"
+        class="mx-auto"
         width="320"
         v-model="userEmail"
         :rules="emailRules"
@@ -68,6 +68,7 @@
 
 <script setup>
     import router from '@/router/router'
+import { useUserStore } from '@/stores/user'
     import { ref } from 'vue'
     import { VBtn, VForm, VSheet, VTextField } from 'vuetify/components'
 
@@ -78,17 +79,20 @@
     const userPassword = ref('')
     const userEmail = ref('')
     const regAlert = ref(false) 
-
+    const store = useUserStore()
    
     async function submit (event) {
          const { valid } = await form.value.validate()
 
         if (valid) {
           loading.value = true
+         
+          alert(JSON.stringify({userName: userName.value, password: userPassword.value, email: userEmail.value})) 
+          store.register(userName.value, userEmail.value)
+          
           const results = await event
           loading.value = false
-          alert(JSON.stringify({username: userName.value, password: userPassword.value, email: userEmail.value})) 
-        //  router.push('/')
+          router.push('/')
         }
         else {
           regAlert.value = !regAlert.value
@@ -101,7 +105,7 @@
     const userNameRules = [
     value => {
       if (value?.length >= 3) return true
-      return 'Username must be at least 3 characters.'
+      return 'userName must be at least 3 characters.'
     }
    ]
 

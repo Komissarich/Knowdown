@@ -19,6 +19,7 @@ import { createApp } from 'vue'
 // Styles
 import 'unfonts.css'
 
+const pinia = createPinia()
 //Router
 import router from './router/router'
 
@@ -27,9 +28,9 @@ import { createPinia } from 'pinia';
 
 const app = createApp(App)
 
-const pinia = createPinia()
-registerPlugins(app)
 
-app.use(router)
+registerPlugins(app)
 app.use(pinia)
+app.use(router)
+
 app.mount('#app')

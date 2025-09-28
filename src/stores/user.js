@@ -1,24 +1,25 @@
 import { defineStore } from 'pinia'
-
-export const useUserStore = defineStore('counter', {
-  state: () => ({username: '', email: '',  isLogged: false, avatar: '' }),
-  getters: {
-    doubleCount: (state) => state.count * 2,
-  },
-  actions: {
-    register(name, email) {
+import { ref } from 'vue'
+export const useUserStore = defineStore('counter', () => {
+  const username = ref(0)
+  const email = ref('Eduardo')
+  const isLogged = ref(false)
+  const avatar = ref('')
+  
+  function register(name, email) {
         // Api register
         this.username = name
         this.email = email
-    },
-    login(name, email) {
+    }
+    
+    function login(name) {
         //Api login
         this.isLogged = true
         this.username = name
-        this.email = email
-    },
-    logout(name) {
+    }
+    function logout(name) {
         this.isLogged = false
     }
-  },
+  
+    return { username, email, isLogged, avatar, register, login, logout}
 })

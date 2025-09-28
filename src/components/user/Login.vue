@@ -58,13 +58,14 @@
 
 <script setup>
     import router from '@/router/router'
+    import { useUserStore } from '@/stores/user'
     import { ref } from 'vue'
     const form = ref()
     const logAlert = ref(false)
     const loading = ref(false)
     const userName = ref('')
     const userPassword = ref('')
-
+    const store = useUserStore()
     async function submit (event) {
          const { valid } = await form.value.validate()
 
@@ -73,6 +74,7 @@
           const results = await event
           loading.value = false
           alert(JSON.stringify({username: userName.value, password: userPassword.value})) 
+          store.login(userName.value)
           router.push('/')
         }
         else {
