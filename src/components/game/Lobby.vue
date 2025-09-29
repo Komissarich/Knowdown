@@ -7,14 +7,25 @@
       <v-col cols="12" md="6">
         <v-card  color="teal-lighten-4" title="Players"  style="height: 400px;  overflow-y: auto;">
           <v-card-text>
-         <v-list-item
-              v-for="player in players"
-              :key="player.id"
-              :title="player.name"
-              color="primary"
-              variant="plain"
-              prepend-icon="mdi-account"
-            ></v-list-item>
+           <template v-for="(player, index) in players" :key="player.id">
+             <v-hover
+              v-slot="{ isHovering, props }"
+              
+            >
+                <v-list-item
+                  :elevation="isHovering ? 6 : 0"
+                  :class="{'on-hover': isHovering }"
+                  :title="player.name"
+                  prepend-avatar="https://randomuser.me/api/portraits/men/78.jpg"
+                  color="teal-lighten-4"
+                  variant='outlined'
+                  v-bind="props"
+                  class="mt-3"
+                ></v-list-item>
+                </v-hover>
+                <v-divider v-if="index < players.length - 1" />
+                 
+        </template>
           </v-card-text>
         </v-card>
       </v-col>
@@ -64,11 +75,14 @@
     const userStore = useUserStore()
     const players = ref([])
     const route = useRoute()
-    players.value.push({name: userStore.username})
+    players.value.push({id: 0, name: userStore.username})
+   
     onMounted(() => {
-        for (var i = 0; i < route.query.maxPlayers; i++) {
-            players.value.push({name: "Empty slot"})
+        for (var i = 1; i <= route.query.maxPlayers; i++) {
+          players.value.push({id: i, name: "Empty slot"})
         }
     })
+
+    
 
 </script>

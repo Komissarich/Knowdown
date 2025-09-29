@@ -22,10 +22,12 @@
      </VAppBar>
 
       <VNavigationDrawer
+
         v-model="drawer"
         :location="$vuetify.display.mobile ? 'bottom' : undefined"
         temporary
       >
+      <VList lines="two">
         <VListItem
           link
           to="/users/me"
@@ -52,7 +54,7 @@
           prepend-icon="mdi-chart-box-outline"
           title="Statistics"
         ></VListItem>
-
+      </VList>
       </VNavigationDrawer>
 
       

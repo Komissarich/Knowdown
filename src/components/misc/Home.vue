@@ -44,9 +44,5 @@
 
 <script setup>
 import router from '@/router/router';
-import { useUserStore } from '@/stores/user';
-const store = useUserStore()
-onMounted(() => {
-    store.initializeAuth()
-  })
+
 </script>
