@@ -38,12 +38,13 @@ router.beforeEach((to, from, next) => {
         next()
     }
   else {
-    
-    const store = useUserStore();
-   
+    const store = useUserStore()
     if (to.meta.requireAuth == true && store.isLogged == false) {
-
           return next({ path: "/auth/login" })
+    }
+    if (!store.checkJWT()) {
+      console.log('token expired')
+      return next({ path: "/auth/login" })
     }
     next()
   }

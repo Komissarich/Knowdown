@@ -59,7 +59,7 @@
 <script setup>
     import router from '@/router/router'
     import { useUserStore } from '@/stores/user'
-    import { ref } from 'vue'
+    import { onMounted, ref } from 'vue'
     const form = ref()
     const logAlert = ref(false)
     const loading = ref(false)
@@ -97,4 +97,6 @@
       return 'Password must be at least 3 characters.'
     }
   ]
+
+  
 </script>

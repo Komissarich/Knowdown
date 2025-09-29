@@ -1,5 +1,5 @@
 <template>
-    
+    <v-parallax src="https://cdn.vuetifyjs.com/images/parallax/material.jpg">
     <div class="d-flex justify-center align-center" style="height: 60vh;">
   <VSheet width="350" height="485" :elevation="16">
     <v-alert text="Coulnd't register user" v-model="regAlert" type="error"></v-alert>
@@ -62,6 +62,7 @@
    
   </VSheet>
   </div>
+  </v-parallax>
 </template>
 
 

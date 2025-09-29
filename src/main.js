@@ -19,18 +19,21 @@ import { createApp } from 'vue'
 // Styles
 import 'unfonts.css'
 
-const pinia = createPinia()
+
 //Router
 import router from './router/router'
 
 //Pinia
 import { createPinia } from 'pinia';
+import { useUserStore } from './stores/user';
 
+const pinia = createPinia()
 const app = createApp(App)
 
 
 registerPlugins(app)
 app.use(pinia)
 app.use(router)
-
+const userStore = useUserStore()
+userStore.initializeAuth()
 app.mount('#app')
