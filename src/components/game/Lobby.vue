@@ -34,7 +34,9 @@
             <div style="text-align: center;"> <h2 class="mx-auto"> {{ route.query.lobbyName }}</h2></div>
             
           <v-card-text class="medium font text-white-600">
-          Room id:  {{ route.query.lobbyId }}
+            Room id: {{ route.query.lobbyId }}
+           <v-text-field readonly variant="outlined" > Link: https://knowdown/game/lobby/{{ route.query.lobbyId }}</v-text-field>
+            <v-img :src="`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${route.query.lobbyId}`" ></v-img>
           </v-card-text>
         </v-card>
       </v-col>
@@ -76,7 +78,6 @@
     const players = ref([])
     const route = useRoute()
     players.value.push({id: 0, name: userStore.username})
-   
     onMounted(() => {
         for (var i = 1; i <= route.query.maxPlayers; i++) {
           players.value.push({id: i, name: "Empty slot"})
