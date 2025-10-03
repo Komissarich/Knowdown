@@ -27,14 +27,12 @@ public class QuestionController {
     ) {
         log.info("Called getQuestion with parameters: difficulty=" + difficulty + "; type="+type);
 
+
         try {
             return ResponseEntity.ok(questionService.getQuestionFromApi(type, difficulty));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
-
-
     }
-
 
 }
