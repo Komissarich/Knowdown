@@ -10,10 +10,11 @@ export const useUserStore = defineStore('user', () => {
   function initializeAuth() {
     console.log("checkAuth")
     const token = localStorage.getItem('userToken')
-  
-    if (token) {
+    const username = localStorage.getItem('userName')
+    if (token && username) {
         this.token = token
         this.isLogged = true
+        this.username = username
     }
   }
 
@@ -31,10 +32,13 @@ export const useUserStore = defineStore('user', () => {
         this.username = name
         this.token = 'test'
         localStorage.setItem('userToken', this.token);
+        localStorage.setItem('userName', name);
     }
     function logout() {
         this.isLogged = false
-        localStorage.setItem('userToken', '');
+       
+        localStorage.removeItem('userName');
+        localStorage.removeItem('userToken');
     }
 
     function checkJWT() {

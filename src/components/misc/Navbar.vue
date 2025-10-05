@@ -15,9 +15,10 @@
         Knowdown
         </router-link>
         </VToolbarTitle>
-        <VBtn variant="text" icon="mdi-chart-box-outline" @click="router.push('/statistics')"> </VBtn>
-        <VBtn icon="mdi-magnify" variant="text" @click="router.push('/game/search')"></VBtn>
-        <VBtn variant="text" icon="mdi-account" @click="router.push('/users/me')"> </VBtn>
+        <VBtn v-tooltip="'Statistics'" variant="text" icon="mdi-chart-box-outline" @click="router.push('/statistics')"> </VBtn>
+        <VBtn v-tooltip="'Search game'" icon="mdi-magnify" variant="text" @click="router.push('/game/search')"></VBtn>
+        <VBtn v-tooltip="'Create game'" variant="text" icon="mdi-dice-3-outline" @click="router.push('/game/create')"> </VBtn>
+        <VBtn v-tooltip="'Profile'" variant="text" icon="mdi-account" @click="router.push('/users/me')"> </VBtn>
         
      </VAppBar>
 

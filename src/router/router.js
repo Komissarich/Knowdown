@@ -1,4 +1,4 @@
-import { createMemoryHistory, createRouter } from 'vue-router'
+import { createMemoryHistory, createRouter, createWebHistory } from 'vue-router'
 
 
 import Lobby from '@/components/game/Lobby.vue'
@@ -13,7 +13,7 @@ import Profile from '@/components/user/Profile.vue'
 import CreateLobby from '@/components/game/CreateLobby.vue'
 
 const routes = [
-  { path: '/', component: Lobby, meta: {requireAuth: false}},
+  { path: '/', name: "Home", component: Home, meta: {requireAuth: true}},
   { path: '/auth/register', component: Register, meta: {requireAuth: false}},
   { path: '/auth/login', component: Login, meta: {requireAuth: false}},
   { path: '/statistics', component: Statistics, meta: {requireAuth: true}},
@@ -27,7 +27,7 @@ const routes = [
 
 
 const router = createRouter({
-  history: createMemoryHistory(),
+  history: createWebHistory(),
   routes,
 })
 

@@ -43,6 +43,6 @@ import { ref } from 'vue'
     const lobbyId = crypto.randomUUID().substring(0, 6)
     console.log(maxPlayers.value)
     router.push({path: '/game/lobby/' + lobbyId,
-    query: {lobbyId: lobbyId, lobbyName: lobbyName.value, isPrivate: isPrivate.value, maxPlayers:maxPlayers.value[1] - 1}})
+    params: {lobbyId: lobbyId, lobbyName: lobbyName.value, isPrivate: isPrivate.value, maxPlayers:maxPlayers.value[1] - 1}})
   }
 </script>
