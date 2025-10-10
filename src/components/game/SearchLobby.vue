@@ -3,6 +3,7 @@
     <div class="text-center">
         <p>Insert a code to join the game</p>
       <v-text-field
+        v-model:model-value="room_code"
         clearable
         width="300"
         label="Room code"
@@ -18,7 +19,7 @@
         variant="flat"
         style="min-width: 140px;"
         rounded="lg"
-        @click="router.push('/lobby')"
+        @click="router.push('/game/lobby/' + room_code) "
       >
         Play
       </v-btn>
@@ -26,7 +27,9 @@
   </div>
 </template>
 
-<script>
-import router from '@/router/router';
+<script setup >
+  import router from '@/router/router'
+ import { ref } from 'vue'
+const room_code = ref('')
 
 </script>

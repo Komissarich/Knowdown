@@ -26,14 +26,14 @@ import router from './router/router'
 //Pinia
 import { createPinia } from 'pinia';
 import { useUserStore } from './stores/user';
-
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 const pinia = createPinia()
+pinia.use(piniaPluginPersistedstate);
 const app = createApp(App)
-
 
 registerPlugins(app)
 app.use(pinia)
 app.use(router)
 const userStore = useUserStore()
-userStore.initializeAuth()
+//userStore.initializeAuth()
 app.mount('#app')
