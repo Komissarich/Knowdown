@@ -32,4 +32,16 @@ public class SecurityConfig {
 
         return new InMemoryUserDetailsManager(user);
     }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf(csrf -> csrf.disable()) // Отключаем CSRF
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/login").permitAll() // Разрешаем /login
+                        .anyRequest().authenticated()
+                )
+                .formLogin(form -> form.disable());
+        return http.build();
+    }
 }
