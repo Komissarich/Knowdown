@@ -1,5 +1,5 @@
 user-service/HELP.md
-
+.idea
 target/
 user-service/target/
 .mvn/wrapper/maven-wrapper.jar
@@ -16,7 +16,6 @@ user-service/target/
 .sts4-cache
 
 ### IntelliJ IDEA ###
-.idea
 *.iws
 *.iml
 *.ipr
