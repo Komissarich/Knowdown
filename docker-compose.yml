@@ -1,15 +1,14 @@
-version: "3.8"
 services:
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-  ports:
-    - "8080:8080"
-  depends_on:
-    - lobby_service
-  networks:
-    - knowdown_network
+    ports:
+      - "8080:8080"
+    depends_on:
+      - lobby_service
+    networks:
+      - knowdown_network
 
   lobby_service:
     build:
@@ -79,5 +78,5 @@ volumes:
     name: user_postgres_data
 
 networks:
-  app_network:
+  knowdown_network:
     driver: bridge
