@@ -1,6 +1,6 @@
 <template>
   <div class="d-flex justify-center align-center" style="height: 60vh">
-    <v-card style="width: 390px" color="blue-grey-lighten-1">
+    <v-card style="width: 390px" color="blue-grey-lighten-5">
       <v-card-title>Game settings</v-card-title>
       <v-text-field
         label="Room name"
@@ -9,7 +9,17 @@
         variant="outlined"
         v-model="lobbyName"
       ></v-text-field>
-
+      <v-range-slider
+        v-model="maxPlayers"
+        color="light-green-lighten-4"
+        max-width="350"
+        :max="4"
+        :min="1"
+        prepend-icon="mdi-account"
+        step="1"
+        label="Player count"
+        thumb-label="true"
+      ></v-range-slider>
       <v-switch
         label="Private"
         class="ml-3"
