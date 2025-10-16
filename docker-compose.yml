@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  spring-boot-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - libretranslate
+    networks:
+      - app-network
+
+  libretranslate:
+    image: libretranslate/libretranslate
+    ports:
+      - "5000:5000"
+    environment:
+      - LT_LOAD_ONLY=en,ru
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

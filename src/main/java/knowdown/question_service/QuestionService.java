@@ -85,7 +85,7 @@ public class QuestionService {
 
     public String translateString(String ruString) {
         log.info("translateString called with string " + ruString);
-        String url = "http://127.0.0.1:5000/translate";
+        String url = "http://libretranslate:5000/translate";
         TranslationApiRequest request = new TranslationApiRequest(ruString, "en", "ru");
 
         HttpHeaders headers = new HttpHeaders();
