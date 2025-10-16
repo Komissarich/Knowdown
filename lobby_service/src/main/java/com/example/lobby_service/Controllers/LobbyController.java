@@ -16,11 +16,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequestMapping("/api/lobby")
 @CrossOrigin(origins = "http://localhost:8080", allowedHeaders = "*", methods = {RequestMethod.POST, RequestMethod.GET, RequestMethod.OPTIONS})
 public class LobbyController {
     private final LobbyService lobbyService = new LobbyService();
 
-    @MessageMapping("/lobby/{lobbyId}/send_message")
+    @MessageMapping("/{lobbyId}/send_message")
     @SendTo("/topic/lobby/{lobbyId}/messages")
     public String processChatMessages(@DestinationVariable String lobbyId, String message) throws JsonProcessingException {
         System.out.println(message);
@@ -30,7 +31,7 @@ public class LobbyController {
         return message;
     }
 
-    @MessageMapping("/lobby/{lobbyId}/join")
+    @MessageMapping("/{lobbyId}/join")
     @SendTo("/topic/lobby/{lobbyId}/player_list")
     public List<Player> processLobbyList(@DestinationVariable String lobbyId, String message) throws JsonProcessingException {
         System.out.println(message);
@@ -41,7 +42,7 @@ public class LobbyController {
         return lobbyService.ListPlayers(lobbyId);
     }
 
-    @PostMapping("/game/lobby/create")
+    @PostMapping("/create")
     public ResponseEntity<LobbyResponse> createLobby(@RequestBody LobbyRequest request) {
         System.out.println("creating lobby");
         String lobbyId = lobbyService.CreateLobby(
