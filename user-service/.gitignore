@@ -1,6 +1,7 @@
 user-service/HELP.md
 .idea
 target/
+
 user-service/target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
