@@ -97,8 +97,8 @@ const message = ref("");
 //players.value.push({ id: 0, name: userStore.username });
 
 const client = new Client({
-  brokerURL: "ws://localhost:8081/ws", // Replace with your WebSocket URL
-
+  // brokerURL: "ws://localhost:8081/ws", // Replace with your WebSocket URL
+  brokerURL: "/ws/lobby",
   debug: function (str) {
     console.log(str); // Optional: enable debug logging
   },
@@ -150,7 +150,7 @@ function sendChatMessage() {
   console.log("try to send " + message.value);
 
   client.publish({
-    destination: "/app/lobby/" + route.params.lobby_id + "/send_message",
+    destination: "/app/" + route.params.lobby_id + "/send_message",
     body: JSON.stringify({
       author: userStore.username,
       message: message.value,
@@ -161,7 +161,7 @@ function sendChatMessage() {
 function updatePlayerList() {
   console.log("new_player " + message.value);
   client.publish({
-    destination: "/app/lobby/" + route.params.lobby_id + "/join",
+    destination: "/app/" + route.params.lobby_id + "/join",
     body: JSON.stringify({ username: userStore.username }),
   });
 }
