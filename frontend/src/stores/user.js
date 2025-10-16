@@ -1,5 +1,7 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
+import axios from "axios";
+
 export const useUserStore = defineStore(
   "user",
   () => {
@@ -9,18 +11,51 @@ export const useUserStore = defineStore(
     const avatar = ref("");
     const token = ref("");
 
-    function register(name, email) {
-      // Api register
-      this.username = name;
-      this.email = email;
-      this.token = "test";
+    function register(name, email, password) {
+      axios
+        .post("/api/auth/register", {
+          username: name,
+          password: password,
+        })
+        .then(function (response) {
+          username.value = name;
+          // email.value = email;
+          token.value = response.data.token;
+          console.log(response.data);
+          if (token.value === null) {
+            throw new Error("error");
+          }
+        })
+        .catch(function (error) {
+          if (error.response) {
+            console.log(error.response.data); // => the response payload
+          }
+          throw error;
+        });
     }
 
-    function login(name) {
-      //Api login
-      this.isLogged = true;
-      this.username = name;
-      this.token = "test";
+    function login(name, password) {
+      axios
+        .post("/api/auth/login", {
+          username: name,
+          password: password,
+        })
+        .then(function (response) {
+          this.isLogged = true;
+          this.username = name;
+          this.token = response.data.token;
+          console.log(response.data);
+          if (this.token === null) {
+            throw new Error("error");
+          }
+        })
+        .catch(function (error) {
+          if (error.response) {
+            console.log(error.response.data); // => the response payload
+          }
+
+          throw error;
+        });
     }
     function logout() {
       this.isLogged = false;

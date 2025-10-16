@@ -74,7 +74,7 @@ function createLobby() {
         isPrivate.value,
         maxPlayers.value[1]
       );
-      router.push({ path: "/game/lobby/" + response.data.lobbyId });
+      router.push({ path: "/lobby/" + response.data.lobbyId });
     })
     .catch(function (error) {
       console.log(error);

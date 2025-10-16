@@ -21,7 +21,7 @@ const routes = [
   { path: "/auth/login", component: Login, meta: { requireAuth: false } },
   { path: "/statistics", component: Statistics, meta: { requireAuth: true } },
   {
-    path: "/game/lobby/:lobby_id",
+    path: "/lobby/:lobby_id",
     component: Lobby,
     meta: { requireAuth: true },
   },

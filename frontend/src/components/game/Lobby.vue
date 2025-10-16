@@ -98,7 +98,7 @@ const message = ref("");
 
 const client = new Client({
   // brokerURL: "ws://localhost:8081/ws", // Replace with your WebSocket URL
-  brokerURL: "/ws/lobby",
+  brokerURL: "/ws/",
   debug: function (str) {
     console.log(str); // Optional: enable debug logging
   },
