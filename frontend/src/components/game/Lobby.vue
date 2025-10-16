@@ -97,7 +97,7 @@ const message = ref("");
 //players.value.push({ id: 0, name: userStore.username });
 
 const client = new Client({
-  brokerURL: "ws://localhost:8080/ws", // Replace with your WebSocket URL
+  brokerURL: "ws://localhost:8081/ws", // Replace with your WebSocket URL
 
   debug: function (str) {
     console.log(str); // Optional: enable debug logging
