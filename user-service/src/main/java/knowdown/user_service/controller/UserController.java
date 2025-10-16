@@ -85,7 +85,8 @@ public class UserController {
 
             if (isRegistered) {
                 log.info("Пользователь {} успешно зарегистрирован", request.getUsername());
-                AuthResponse response = new AuthResponse(null, "Registration successful", true);
+                String token = userService.authenticateAndGetToken(request.getUsername(), request.getPassword());
+                AuthResponse response = new AuthResponse(token, "Registration successful", true);
                 return ResponseEntity.ok(response);
             } else {
                 log.warn("Ошибка регистрации - имя пользователя уже занято: {}", request.getUsername());
