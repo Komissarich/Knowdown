@@ -13,16 +13,19 @@ services:
       - user_db
     environment:
       SPRING_DATASOURCE_URL: 'jdbc:postgresql://user_db:5432/new_db'
+      SPRING_DATASOURCE_USERNAME: 'new_db'
+      SPRING_DATASOURCE_PASSWORD: '123'
       JAVA_OPTS: '-Xmx512m'
+      TOKEN_SIGNING_KEY: 'w8OzxLbEt8S3xLfEt8S3xLfEt8S3xLfEt8S3xLfEt8Q='
 
   user_db:
     image: postgres
     restart: always
     environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=pass
+      - POSTGRES_USER=new_db
+      - POSTGRES_PASSWORD=123
       - POSTGRES_DB=new_db
-#    volumes:
-#      - pg_user:/var/lib/postgresql/data
+    volumes:
+      - pg_user:/var/lib/postgresql/data
     ports:
       - "5432:5432"
