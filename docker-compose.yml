@@ -1,0 +1,83 @@
+version: "3.8"
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+  ports:
+    - "8080:8080"
+  depends_on:
+    - lobby_service
+  networks:
+    - knowdown_network
+
+  lobby_service:
+    build:
+      context: ./lobby_service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    depends_on:
+      lobby_postgres:
+        condition: service_healthy
+    networks:
+      - knowdown_network
+
+  lobby_postgres:
+    image: postgres:14
+    environment:
+      - POSTGRES_DB=lobby
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5432:5432"
+    volumes:
+      - lobby_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  user_service:
+    build:
+      context: ./user_service
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    depends_on:
+      user_postgres:
+        condition: service_healthy
+    networks:
+      - knowdown_network
+
+  user_postgres:
+    image: postgres:14
+    environment:
+      - POSTGRES_DB=users
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5433:5432"
+    volumes:
+      - user_postgres:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  lobby_postgres:
+    name: lobby_postgres_data
+  user_postgres:
+    name: user_postgres_data
+
+networks:
+  app_network:
+    driver: bridge
