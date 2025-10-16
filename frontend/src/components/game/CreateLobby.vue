@@ -58,7 +58,7 @@ function createLobby() {
   );
   axios({
     method: "post",
-    url: "http://localhost:8080/game/lobby/create",
+    url: "http://localhost:8081/game/lobby/create",
     data: {
       isPrivate: isPrivate.value,
       maxPlayers: maxPlayers.value[1],
