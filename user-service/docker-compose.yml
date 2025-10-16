@@ -12,7 +12,7 @@ services:
     depends_on:
       - user_db
     environment:
-      SPRING_DATASOURCE_URL: 'jdbc:postgresql://user_db:5432/users_db'
+      SPRING_DATASOURCE_URL: 'jdbc:postgresql://user_db:5432/new_db'
       JAVA_OPTS: '-Xmx512m'
 
   user_db:
@@ -21,7 +21,7 @@ services:
     environment:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=pass
-      - POSTGRES_DB=users_db
+      - POSTGRES_DB=new_db
 #    volumes:
 #      - pg_user:/var/lib/postgresql/data
     ports:
