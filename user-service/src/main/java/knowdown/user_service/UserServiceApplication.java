@@ -11,6 +11,3 @@ public class UserServiceApplication {
 	}
 
 }
-
-//psql -U stas -d userdb
-//SELECT * FROM users;
