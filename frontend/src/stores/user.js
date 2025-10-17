@@ -11,17 +11,19 @@ export const useUserStore = defineStore(
     const avatar = ref("");
     const token = ref("");
 
-    function register(name, email, password) {
-      axios
+    async function register(name, mail, password) {
+      await axios
         .post("/api/auth/register", {
           username: name,
           password: password,
         })
         .then(function (response) {
+          console.log(mail);
           username.value = name;
-          // email.value = email;
+          email.value = mail.value;
           token.value = response.data.token;
           console.log(response.data);
+          isLogged.value = true;
           if (token.value === null) {
             throw new Error("error");
           }
@@ -34,18 +36,18 @@ export const useUserStore = defineStore(
         });
     }
 
-    function login(name, password) {
-      axios
+    async function login(name, password) {
+      await axios
         .post("/api/auth/login", {
           username: name,
           password: password,
         })
         .then(function (response) {
-          this.isLogged = true;
-          this.username = name;
-          this.token = response.data.token;
+          isLogged.value = true;
+          username.value = name;
+          token.value = response.data.token;
           console.log(response.data);
-          if (this.token === null) {
+          if (token.value === null) {
             throw new Error("error");
           }
         })

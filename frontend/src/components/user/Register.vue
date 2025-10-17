@@ -86,7 +86,7 @@ async function submit(event) {
     loading.value = true;
 
     try {
-      store.register(userName.value, userEmail.value, userPassword.value);
+      await store.register(userName.value, userEmail, userPassword.value);
       loading.value = false;
       router.push("/");
     } catch (error) {

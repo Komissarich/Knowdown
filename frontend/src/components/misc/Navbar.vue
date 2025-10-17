@@ -12,7 +12,7 @@
       ></VAppBarNavIcon>
       <VToolbarTitle
         ><VIcon icon="mdi-brain"></VIcon
-        ><router-link to="/" style="text-decoration: none; color: inherit">
+        ><router-link to="/home" style="text-decoration: none; color: inherit">
           Knowdown
         </router-link>
       </VToolbarTitle>
