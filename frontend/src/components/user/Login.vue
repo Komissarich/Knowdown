@@ -66,7 +66,7 @@ async function submit(event) {
     const results = await event;
 
     try {
-      await store.login(userName.value, userPassword.value);
+      store.login(userName.value, userPassword.value);
       router.push("/");
       loading.value = false;
     } catch (error) {
