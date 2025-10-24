@@ -18,7 +18,7 @@
         variant="flat"
         style="min-width: 140px"
         rounded="lg"
-        @click="router.push('lobby/' + room_code)"
+        @click="router.push('/lobby/' + room_code)"
       >
         Play
       </v-btn>
