@@ -18,11 +18,7 @@
         variant="flat"
         style="min-width: 140px"
         rounded="lg"
-<<<<<<< HEAD
-        @click="router.push('lobby/' + room_code)"
-=======
         @click="router.push('/lobby/' + room_code)"
->>>>>>> tmp
       >
         Play
       </v-btn>
