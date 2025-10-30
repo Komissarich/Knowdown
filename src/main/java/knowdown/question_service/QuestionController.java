@@ -3,11 +3,7 @@ package knowdown.question_service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.*;
 
 
 @RestController
@@ -20,16 +16,14 @@ public class QuestionController {
         this.questionService = questionService;
     }
 
-    @GetMapping
+    @PostMapping
     public ResponseEntity<Question> getQuestion(
-            @RequestParam(name = "difficulty", required = false) QuestionDifficulty difficulty,
-            @RequestParam(name = "type", required = false) QuestionType type
+            @RequestBody QuestionRequest request
     ) {
-        log.info("Called getQuestion with parameters: difficulty=" + difficulty + "; type="+type);
-
+        log.info("Called getQuestion with parameters: difficulty = " + request.difficulty() + "; type = "+request.type());
 
         try {
-            return ResponseEntity.ok(questionService.getQuestionFromApi(type, difficulty));
+            return ResponseEntity.ok(questionService.getQuestionFromApi(request.type(), request.difficulty()));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
