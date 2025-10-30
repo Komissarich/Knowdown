@@ -1,3 +1,4 @@
+
 services:
   frontend:
     build:
@@ -80,6 +81,26 @@ services:
       start_period: 10s
     restart: unless-stopped
 
+  question_service:
+      build:
+        context: .
+        dockerfile: Dockerfile
+      ports:
+        - "8083:8083"
+      depends_on:
+        - libretranslate
+      networks:
+        - app-network
+
+  libretranslate:
+      image: libretranslate/libretranslate
+      ports:
+        - "5000:5000"
+      environment:
+        - LT_LOAD_ONLY=en,ru
+      networks:
+        - app-network
+
 volumes:
   lobby_postgres:
     name: lobby_postgres_data
@@ -89,3 +110,4 @@ volumes:
 networks:
   knowdown_network:
     driver: bridge
+
