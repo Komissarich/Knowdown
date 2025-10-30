@@ -75,7 +75,7 @@
         <v-card style="width: 300px">
           <v-card-title>Actions</v-card-title>
           <v-card-actions>
-            <v-btn color="primary">START</v-btn>
+            <v-btn color="primary" @click="router.push('/arena')">START</v-btn>
             <v-btn color="error">EXIT</v-btn>
           </v-card-actions>
         </v-card>
@@ -89,6 +89,7 @@ import { useRoute } from "vue-router";
 import { useUserStore } from "@/stores/user";
 import { onMounted, onUnmounted, ref } from "vue";
 import { Client, Stomp } from "@stomp/stompjs";
+import router from "@/router/router.js";
 const userStore = useUserStore();
 const players = ref([]);
 const route = useRoute();
