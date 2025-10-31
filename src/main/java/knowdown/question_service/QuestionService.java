@@ -1,7 +1,6 @@
 package knowdown.question_service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import knowdown.question_service.dto.QuestionResponse;
 import knowdown.question_service.questionApi.ApiQuestion;
 import knowdown.question_service.questionApi.QuestionApiResponse;
 import knowdown.question_service.translationApi.TranslationApiRequest;
@@ -9,7 +8,6 @@ import knowdown.question_service.translationApi.TranslationApiResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.jackson.JsonObjectSerializer;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -27,9 +25,10 @@ public class QuestionService {
     @Autowired
     private RestTemplate restTemplate;
 
-    public Question getQuestionFromApi(
+    public QuestionResponse getQuestionFromApi(
             QuestionType type,
-            QuestionDifficulty difficulty
+            QuestionDifficulty difficulty,
+            QuestionCategory questionCategory
     ) {
         String url = "https://opentdb.com/api.php";
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
@@ -41,14 +40,18 @@ public class QuestionService {
         if (difficulty != null) {
             builder.queryParam("difficulty", difficulty.toString().toLowerCase());
         }
+        if (questionCategory != null) {
+            builder.queryParam("category", questionCategory.getCode());
+        }
+
         log.info("URL: " + builder.toUriString());
         QuestionApiResponse QuestionApiResponse = restTemplate.getForObject(builder.toUriString(), QuestionApiResponse.class);
         return QuestionApiResponseToQuestion(QuestionApiResponse);
     }
 
 
-    private Question QuestionApiResponseToQuestion(QuestionApiResponse QuestionApiResponse) {
-        if (QuestionApiResponse.response_code() != 0) {
+    private QuestionResponse QuestionApiResponseToQuestion(QuestionApiResponse QuestionApiResponse) {
+        if (QuestionApiResponse == null || QuestionApiResponse.response_code() != 0) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "External API error");
         }
 
@@ -63,6 +66,7 @@ public class QuestionService {
 
         String correctAnswer;
         List<String> incorrectAnswers = new ArrayList<String>();
+        log.info("here");
         if (type == QuestionType.TRUE_FALSE) {
             correctAnswer = "Правда";
             incorrectAnswers.add("Ложь");
@@ -73,10 +77,11 @@ public class QuestionService {
             });
         }
 
-        return new Question(
+        return new QuestionResponse(
                 question,
                 difficulty,
                 type,
+                translateString(apiQuestion.category()),
                 correctAnswer,
                 incorrectAnswers
         );
@@ -93,7 +98,8 @@ public class QuestionService {
 
         HttpEntity<TranslationApiRequest> entity = new HttpEntity<TranslationApiRequest>(request, headers);
         TranslationApiResponse apiResponse = restTemplate.postForObject(url, entity, TranslationApiResponse.class);
-        log.info("translate api response: " + apiResponse.toString());
+        log.info("before translation: " + ruString);
+        log.info("after translation: " + apiResponse.translatedText());
         return apiResponse.translatedText();
     }
 }
