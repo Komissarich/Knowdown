@@ -8,12 +8,14 @@ export const useLobbyStore = defineStore(
     const lobby_name = ref("");
     const isPrivate = ref(false);
     const maxPlayers = ref("");
+    const creator = ref("");
 
-    function createLobby(lobby_id, lobby_name, isPrivate, maxPlayers) {
+    function createLobby(lobby_id, lobby_name, isPrivate, maxPlayers, creator) {
       this.lobby_id = lobby_id;
       this.lobby_name = lobby_name;
       this.isPrivate = isPrivate;
       this.maxPlayers = maxPlayers;
+      this.creator = creator;
     }
 
     function clearLobby(name) {
@@ -21,6 +23,7 @@ export const useLobbyStore = defineStore(
       this.lobby_name = null;
       this.isPrivate = false;
       this.maxPlayers = 0;
+      this.creator = null;
     }
 
     return {
@@ -28,6 +31,7 @@ export const useLobbyStore = defineStore(
       lobby_name,
       isPrivate,
       maxPlayers,
+      creator,
       clearLobby,
       createLobby,
     };

@@ -14,14 +14,16 @@ import Login from "@/components/user/Login.vue";
 import { useUserStore } from "@/stores/user";
 import Profile from "@/components/user/Profile.vue";
 import CreateLobby from "@/components/game/CreateLobby.vue";
+import Arena from "@/components/game/Arena.vue";
+import Game from "@/components/game/Game.vue";
 
 const routes = [
-  { path: "/", name: "Home", component: Home, meta: { requireAuth: true } },
+  { path: "/", name: "Home", component: Arena, meta: { requireAuth: false, showNavbar: false } },
   { path: "/auth/register", component: Register, meta: { requireAuth: false } },
   { path: "/auth/login", component: Login, meta: { requireAuth: false } },
   { path: "/statistics", component: Statistics, meta: { requireAuth: true } },
   {
-    path: "/game/lobby/:lobby_id",
+    path: "/lobby/:lobby_id",
     component: Lobby,
     meta: { requireAuth: true },
   },
@@ -37,6 +39,8 @@ const routes = [
   },
   { path: "/users/me", component: Me, meta: { requireAuth: true } },
   { path: "/users/:id", component: Profile, meta: { requireAuth: true } },
+  { path: "/game/:game_id", component: Game, meta: { requireAuth: true } },
+  // { path: "/arena", component: Arena, meta: { requireAuth: true } }
 ];
 
 const router = createRouter({

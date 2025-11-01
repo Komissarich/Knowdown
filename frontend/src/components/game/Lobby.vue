@@ -75,7 +75,7 @@
         <v-card style="width: 300px">
           <v-card-title>Actions</v-card-title>
           <v-card-actions>
-            <v-btn color="primary">START</v-btn>
+            <v-btn color="primary" @click="playGame">START</v-btn>
             <v-btn color="error">EXIT</v-btn>
           </v-card-actions>
         </v-card>
@@ -89,16 +89,37 @@ import { useRoute } from "vue-router";
 import { useUserStore } from "@/stores/user";
 import { onMounted, onUnmounted, ref } from "vue";
 import { Client, Stomp } from "@stomp/stompjs";
+import axios from "axios";
+import router from "@/router/router.js";
+import {useLobbyStore} from "@/stores/lobby.js";
 const userStore = useUserStore();
+
 const players = ref([]);
 const route = useRoute();
 var chat = ref("");
 const message = ref("");
-//players.value.push({ id: 0, name: userStore.username });
 
+async function playGame() {
+  axios({
+    method: "post",
+    url: "/api/lobby/isCreator",
+    data: {
+      name: route.params.lobbyName,
+      username: userStore.username,
+    },
+  })
+    .then(function (response) {
+      console.log(response.data.isCreator);
+      console.log(players.value);
+      router.push({ path: "/game/" + route.params.lobby_id, params: players.value});
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+}
 const client = new Client({
   // brokerURL: "ws://localhost:8081/ws", // Replace with your WebSocket URL
-  brokerURL: "/ws/lobby",
+  brokerURL: "/ws/",
   debug: function (str) {
     console.log(str); // Optional: enable debug logging
   },

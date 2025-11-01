@@ -1,12 +1,14 @@
+
 services:
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+      - "8080:80"
     depends_on:
       - lobby_service
+      - user_service
     networks:
       - knowdown_network
 
@@ -25,15 +27,15 @@ services:
   lobby_postgres:
     image: postgres:14
     environment:
-      - POSTGRES_DB=lobby
-      - POSTGRES_USER=user
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
     ports:
       - "5432:5432"
     volumes:
       - lobby_postgres:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -41,41 +43,63 @@ services:
     restart: unless-stopped
 
   user_service:
-      build:
-       context: ./user-service
-       dockerfile: Dockerfile
-      ports:
-       - "8082:8082"
-      environment:
-       SPRING_DATASOURCE_URL: 'jdbc:postgresql://user_db:5432/new_db'
-       SPRING_DATASOURCE_USERNAME: 'new_db'
-       SPRING_DATASOURCE_PASSWORD: '123'
-       JAVA_OPTS: '-Xmx512m'
-       TOKEN_SIGNING_KEY: 'w8OzxLbEt8S3xLfEt8S3xLfEt8S3xLfEt8S3xLfEt8Q='
-      depends_on:
-       user_postgres:
-         condition: service_healthy
-      networks:
-       - knowdown_network
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://user_postgres:5432/new_db"
+      SPRING_DATASOURCE_USERNAME: "new_db"
+      SPRING_DATASOURCE_PASSWORD: "123"
+      JAVA_OPTS: "-Xmx512m"
+      TOKEN_SIGNING_KEY: "w8OzxLbEt8S3xLfEt8S3xLfEt8S3xLfEt8S3xLfEt8Q="
+    depends_on:
+      user_postgres:
+        condition: service_healthy
+    networks:
+      - knowdown_network
 
   user_postgres:
-     image: postgres:14
-     environment:
-       - POSTGRES_USER=new_db
-       - POSTGRES_PASSWORD=123
-       - POSTGRES_DB=new_db
-     ports:
-       - "5433:5432"
-     volumes:
-       - user_postgres:/var/lib/postgresql/data
+    image: postgres:14
+    environment:
+      - POSTGRES_USER=new_db
+      - POSTGRES_PASSWORD=123
+      - POSTGRES_DB=new_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - user_postgres:/var/lib/postgresql/data
+    networks:
+      - knowdown_network
 
-     healthcheck:
-       test: ["CMD-SHELL", "pg_isready -U user"]
-       interval: 10s
-       timeout: 5s
-       retries: 5
-       start_period: 10s
-     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U new_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  question_service:
+      build:
+        context: .
+        dockerfile: Dockerfile
+      ports:
+        - "8083:8083"
+      depends_on:
+        - libretranslate
+      networks:
+        - app-network
+
+  libretranslate:
+      image: libretranslate/libretranslate
+      ports:
+        - "5000:5000"
+      environment:
+        - LT_LOAD_ONLY=en,ru
+      networks:
+        - app-network
 
 volumes:
   lobby_postgres:
@@ -86,3 +110,4 @@ volumes:
 networks:
   knowdown_network:
     driver: bridge
+

@@ -54,7 +54,8 @@ function createLobby() {
     maxPlayers.value[1],
     lobbyName.value,
     userStore.username,
-    isPrivate.value
+    isPrivate.value,
+    userStore.username
   );
   axios({
     method: "post",
@@ -72,9 +73,10 @@ function createLobby() {
         response.data.lobbyId,
         lobbyName.value,
         isPrivate.value,
-        maxPlayers.value[1]
+        maxPlayers.value[1],
+        userStore.username
       );
-      router.push({ path: "/game/lobby/" + response.data.lobbyId });
+      router.push({ path: "/lobby/" + response.data.lobbyId});
     })
     .catch(function (error) {
       console.log(error);
