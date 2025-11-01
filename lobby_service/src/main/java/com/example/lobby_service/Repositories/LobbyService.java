@@ -48,6 +48,10 @@ public class LobbyService {
         lobbies.get(id).AddMessage(message);
 
     }
+
+    public boolean checkCreator(String lobbyId, String username) {
+        return lobbies.get(lobbyId).getCreator().username.equals(username);
+    }
 }
 
 
