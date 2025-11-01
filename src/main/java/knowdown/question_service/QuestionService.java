@@ -1,10 +1,16 @@
 package knowdown.question_service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
+import knowdown.question_service.database.QuestionEntity;
+import knowdown.question_service.database.QuestionRepository;
 import knowdown.question_service.dto.QuestionResponse;
 import knowdown.question_service.questionApi.ApiQuestion;
 import knowdown.question_service.questionApi.QuestionApiResponse;
-import knowdown.question_service.translationApi.TranslationApiRequest;
-import knowdown.question_service.translationApi.TranslationApiResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,92 +20,113 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 public class QuestionService {
     private static final Logger log = LoggerFactory.getLogger(QuestionService.class);
 
-    @Autowired
-    private RestTemplate restTemplate;
+    private final RestTemplate restTemplate;
+    private final QuestionRepository repository;
 
-    public QuestionResponse getQuestionFromApi(
-            QuestionType type,
-            QuestionDifficulty difficulty,
-            QuestionCategory questionCategory
+    public QuestionService(QuestionRepository repository, RestTemplate restTemplate) {
+        this.repository = repository;
+        this.restTemplate = restTemplate;
+    }
+
+    @PostConstruct
+    public void init() {
+        log.info("Init method called");
+
+        final int needed = 200;
+        if (repository.count() < needed) {
+            String token = getAPISessionToken();
+            log.info("Token: " + token);
+
+            int counter = 0;
+            while (counter < needed) {
+                List<ApiQuestion> apiQuestions = getQuestionsFromApi(50, token);
+                if (apiQuestions == null) {
+                    break;
+                }
+                for (ApiQuestion q: apiQuestions) {
+                    QuestionDifficulty difficulty = QuestionDifficulty.valueOf(q.difficulty().toUpperCase());
+                    QuestionCategory category = QuestionCategory.getFromName(q.category());
+                    QuestionType type = q.type().equals("multiple") ? QuestionType.MULTIPLE_CHOICE : QuestionType.TRUE_FALSE;
+                    QuestionEntity question = new QuestionEntity(
+                            null,
+                            q.question(),
+                            difficulty,
+                            type,
+                            category,
+                            q.correct_answer(),
+                            q.incorrect_answers()
+                    );
+                    repository.save(question);
+                    counter++;
+                }
+                try{
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+            }
+            log.info(String.valueOf(counter) + " questions were added to the database");
+        }
+    }
+
+
+    private List<ApiQuestion> getQuestionsFromApi(
+            int questionsAmount,
+            String token
     ) {
         String url = "https://opentdb.com/api.php";
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
-                .queryParam("amount", 1);
+                .queryParam("amount", 50)
+                .queryParam("token", token);
 
-        if (type != null) {
-            builder.queryParam("type", type == QuestionType.MULTIPLE_CHOICE ? "multiple" : "boolean");
-        }
-        if (difficulty != null) {
-            builder.queryParam("difficulty", difficulty.toString().toLowerCase());
-        }
-        if (questionCategory != null) {
-            builder.queryParam("category", questionCategory.getCode());
-        }
 
         log.info("URL: " + builder.toUriString());
         QuestionApiResponse QuestionApiResponse = restTemplate.getForObject(builder.toUriString(), QuestionApiResponse.class);
-        return QuestionApiResponseToQuestion(QuestionApiResponse);
+        return QuestionApiResponse.results();
     }
 
-
-    private QuestionResponse QuestionApiResponseToQuestion(QuestionApiResponse QuestionApiResponse) {
-        if (QuestionApiResponse == null || QuestionApiResponse.response_code() != 0) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "External API error");
+    private String getAPISessionToken()  {
+        String url = "https://opentdb.com/api_token.php?command=request";
+        String response = restTemplate.getForObject(url, String.class);
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            JsonNode root = mapper.readTree(response);
+            return root.path("token").asText();
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
+    }
 
-        ApiQuestion apiQuestion = QuestionApiResponse.results().getFirst();
-
-        String question = translateString(apiQuestion.question());
-        QuestionDifficulty difficulty = Objects.equals(apiQuestion.difficulty(), "easy") ? QuestionDifficulty.EASY :
-                Objects.equals(apiQuestion.difficulty(), "medium") ? QuestionDifficulty.MEDIUM :
-                                        QuestionDifficulty.HARD;
-        QuestionType type = Objects.equals(apiQuestion.type(), "multiple") ? QuestionType.MULTIPLE_CHOICE :
-                            QuestionType.TRUE_FALSE;
-
-        String correctAnswer;
-        List<String> incorrectAnswers = new ArrayList<String>();
-        log.info("here");
-        if (type == QuestionType.TRUE_FALSE) {
-            correctAnswer = "Правда";
-            incorrectAnswers.add("Ложь");
-        } else {
-            correctAnswer = translateString(apiQuestion.correct_answer());
-            apiQuestion.incorrect_answers().forEach((answer) -> {
-                incorrectAnswers.add(translateString(answer));
-            });
-        }
-
-        return new QuestionResponse(
-                question,
-                difficulty,
-                type,
-                translateString(apiQuestion.category()),
-                correctAnswer,
-                incorrectAnswers
+    public QuestionResponse getQuestionFromDatabase(
+            QuestionDifficulty difficulty,
+            QuestionType type,
+            QuestionCategory category
+    ) {
+        Optional<QuestionEntity> entity = repository.getQuestion(
+                type == null ? null : type.name(),
+                difficulty == null ? null : difficulty.name(),
+                category == null ? null : category.name()
         );
+        if (entity.isEmpty()) {
+            throw new EntityNotFoundException("Question with given parameters not found");
+        } else {
+            QuestionResponse response = new QuestionResponse(
+                    entity.get().getQuestion(),
+                    entity.get().getDifficulty(),
+                    entity.get().getType(),
+                    entity.get().getCategory(),
+                    entity.get().getCorrectAnswer(),
+                    entity.get().getIncorrectAnswers()
+            );
+            return response;
+        }
     }
 
-
-    public String translateString(String ruString) {
-        log.info("translateString called with string " + ruString);
-        String url = "http://libretranslate:5000/translate";
-        TranslationApiRequest request = new TranslationApiRequest(ruString, "en", "ru");
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        HttpEntity<TranslationApiRequest> entity = new HttpEntity<TranslationApiRequest>(request, headers);
-        TranslationApiResponse apiResponse = restTemplate.postForObject(url, entity, TranslationApiResponse.class);
-        log.info("before translation: " + ruString);
-        log.info("after translation: " + apiResponse.translatedText());
-        return apiResponse.translatedText();
-    }
 }

@@ -1,6 +1,19 @@
-version: '3.8'
+version: "3.8"
 
 services:
+  db:
+    image: postgres
+    container_name: questions-db
+    restart: always
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=1234
+      - POSTGRES_DB=questions
+    ports:
+      - '5432:5432'
+    networks:
+      - app-network
+
   spring-boot-app:
     build:
       context: .
@@ -8,16 +21,7 @@ services:
     ports:
       - "8083:8083"
     depends_on:
-      - libretranslate
-    networks:
-      - app-network
-
-  libretranslate:
-    image: libretranslate/libretranslate
-    ports:
-      - "5000:5000"
-    environment:
-      - LT_LOAD_ONLY=en,ru
+      - db
     networks:
       - app-network
 

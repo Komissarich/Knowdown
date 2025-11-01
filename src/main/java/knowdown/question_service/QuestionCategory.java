@@ -1,38 +1,56 @@
 package knowdown.question_service;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public enum QuestionCategory {
-    GENERAL_KNOWLEDGE(9),
-    BOOKS(10),
-    FILM(11),
-    MUSIC(12),
-    THEATRES(13),
-    TELEVISION(14),
-    VIDEO_GAMES(15),
-    BOARD_GAMES(16),
-    SCIENCE_NATURE(17),
-    COMPUTERS(18),
-    MATHEMATICS(19),
-    MYTHOLOGY(20),
-    SPORTS(21),
-    GEOGRAPHY(22),
-    HISTORY(23),
-    POLITICS(24),
-    ART(25),
-    CELEBRITIES(26),
-    ANIMALS(27),
-    VEHICLES(28),
-    COMICS(29),
-    GADGETS(30),
-    ANIME(31),
-    CARTOONS(32);
+    GENERAL_KNOWLEDGE("General Knowledge"),
+    BOOKS("Entertainment: Books"),
+    FILM("Entertainment: Film"),
+    MUSIC("Entertainment: Music"),
+    THEATRES("Entertainment: Musicals &amp; Theatres"),
+    TELEVISION("Entertainment: Television"),
+    VIDEO_GAMES("Entertainment: Video Games"),
+    BOARD_GAMES("Entertainment: Board Games"),
+    SCIENCE_NATURE("Science &amp; Nature"),
+    COMPUTERS("Science: Computers"),
+    MATHEMATICS("Science: Mathematics"),
+    MYTHOLOGY("Mythology"),
+    SPORTS("Sports"),
+    GEOGRAPHY("Geography"),
+    HISTORY("History"),
+    POLITICS("Politics"),
+    ART("Art"),
+    CELEBRITIES("Celebrities"),
+    ANIMALS("Animals"),
+    VEHICLES("Vehicles"),
+    COMICS("Entertainment: Comics"),
+    GADGETS("Science: Gadgets"),
+    ANIME("Entertainment: Japanese Anime &amp; Manga"),
+    CARTOONS("Entertainment: Cartoon &amp; Animations");
 
-    private final int code;
-    QuestionCategory(int code) {
-        this.code = code;
+    private final String name;
+    public String getName() {
+        return this.name;
+    }
+    QuestionCategory(String name) {
+        this.name = name;
     }
 
-    public int getCode() {
-        return this.code;
+    private static final Map<String, QuestionCategory> map = new HashMap<>();
+
+    static {
+        for (QuestionCategory c : values()) {
+            map.put(c.getName(), c);
+        }
     }
+
+    public static QuestionCategory getFromName(String name) {
+        return map.get(name);
+    }
+
+
+
+
 
 }

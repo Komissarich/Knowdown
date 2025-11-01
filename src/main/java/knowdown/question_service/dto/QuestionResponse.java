@@ -10,7 +10,7 @@ public record QuestionResponse(
         String question,
         QuestionDifficulty difficulty,
         QuestionType type,
-        String category,
+        QuestionCategory category,
         String correctAnswer,
         List<String> incorrectAnswers
 ) {}

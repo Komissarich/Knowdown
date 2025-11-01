@@ -24,7 +24,7 @@ public class QuestionController {
     ) {
         log.info("Called getQuestion with parameters: difficulty = " + request.difficulty() + "; type = "+request.type() + "; category = " + request.category());
         try {
-            return ResponseEntity.ok(questionService.getQuestionFromApi(request.type(), request.difficulty(), request.category()));
+            return ResponseEntity.ok(questionService.getQuestionFromDatabase(request.difficulty(), request.type(), request.category()));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
