@@ -1,6 +1,7 @@
 package com.example.lobby_service.Controllers;
 
 import com.example.lobby_service.Repositories.Entities.ChatMessage;
+import com.example.lobby_service.Repositories.Entities.isCreatorRequest;
 import com.example.lobby_service.Repositories.Entities.LobbyRequest;
 import com.example.lobby_service.Repositories.Entities.LobbyResponse;
 import com.example.lobby_service.Repositories.Entities.Player;
@@ -40,6 +41,13 @@ public class LobbyController {
         lobbyService.AddPlayerInLobby(lobbyId, player);
         System.out.println("giving "+ lobbyService.ListPlayers(lobbyId));
         return lobbyService.ListPlayers(lobbyId);
+    }
+
+    @GetMapping("/isCreator")
+
+    public boolean isAuthor(@RequestBody isCreatorRequest request) {
+        System.out.println("check if creator");
+        return lobbyService.checkCreator(request.getLobby_name(), request.getUsername());
     }
 
     @PostMapping("/create")

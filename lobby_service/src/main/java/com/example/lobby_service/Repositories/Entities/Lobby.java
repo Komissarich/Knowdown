@@ -22,8 +22,6 @@ public class Lobby {
         this.lobbyId = lobbyId;
         this.creator = creator;
         this.name= name;
-
-
     }
 
     public void AddPlayer(Player player) {
