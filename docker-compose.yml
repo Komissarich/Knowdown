@@ -83,14 +83,14 @@ services:
 
   question_service:
       build:
-        context: .
+        context: ./question_service
         dockerfile: Dockerfile
       ports:
         - "8083:8083"
       depends_on:
         - libretranslate
       networks:
-        - app-network
+        - knowdown_network
 
   libretranslate:
       image: libretranslate/libretranslate
@@ -99,7 +99,7 @@ services:
       environment:
         - LT_LOAD_ONLY=en,ru
       networks:
-        - app-network
+        - knowdown_network
 
 volumes:
   lobby_postgres:

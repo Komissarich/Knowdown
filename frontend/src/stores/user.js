@@ -41,11 +41,11 @@ export const useUserStore = defineStore(
           password: password,
         })
         .then(function (response) {
-          this.isLogged = true;
-          this.username = name;
-          this.token = response.data.token;
+          isLogged.value = true;
+          username.value = name;
+          token.value = response.data.token;
           console.log(response.data);
-          if (this.token === null) {
+          if (token.value === null) {
             throw new Error("error");
           }
         })
@@ -58,14 +58,14 @@ export const useUserStore = defineStore(
         });
     }
     function logout() {
-      this.isLogged = false;
+      isLogged.value = false;
       token.value = null;
       username.value = null;
     }
 
     function checkJWT() {
       return true;
-      // const decoded = jwtDecode(this.token);
+      // const decoded = jwtDecode(token);
       // const isExpired = decoded.exp < Date.now() / 1000;
 
       // if (isExpired) {

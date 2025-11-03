@@ -18,7 +18,12 @@ import Arena from "@/components/game/Arena.vue";
 import Game from "@/components/game/Game.vue";
 
 const routes = [
-  { path: "/", name: "Home", component: Arena, meta: { requireAuth: false, showNavbar: false } },
+  {
+    path: "/",
+    name: "Home",
+    component: Home,
+    meta: { requireAuth: false, showNavbar: true },
+  },
   { path: "/auth/register", component: Register, meta: { requireAuth: false } },
   { path: "/auth/login", component: Login, meta: { requireAuth: false } },
   { path: "/statistics", component: Statistics, meta: { requireAuth: true } },
