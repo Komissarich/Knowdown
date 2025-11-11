@@ -10,4 +10,5 @@ public class AppConfig {
     public RestTemplate restTemplate() {
         return new RestTemplate();
     }
+    final static boolean isDebug = true;
 }

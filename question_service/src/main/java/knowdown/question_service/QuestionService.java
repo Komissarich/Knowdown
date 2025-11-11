@@ -38,7 +38,7 @@ public class QuestionService {
     public void init() {
         log.info("Init method called");
 
-        final int needed = 4000;
+        final int needed = AppConfig.isDebug ? 300 : 4000;
         if (repository.count() < needed) {
             String token = getAPISessionToken();
             log.info("Token: " + token);

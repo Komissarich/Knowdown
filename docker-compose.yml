@@ -1,30 +1,128 @@
 version: "3.8"
 
 services:
-  db:
-    image: postgres
-    container_name: questions-db
-    restart: always
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      - lobby_service
+      - user_service
+    networks:
+      - knowdown_network
+
+  lobby_service:
+    build:
+      context: ./lobby_service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    depends_on:
+      lobby_postgres:
+        condition: service_healthy
+    networks:
+      - knowdown_network
+
+  lobby_postgres:
+    image: postgres:14
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5432:5432"
+    volumes:
+      - lobby_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  user_service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://user_postgres:5432/new_db"
+      SPRING_DATASOURCE_USERNAME: "new_db"
+      SPRING_DATASOURCE_PASSWORD: "123"
+      JAVA_OPTS: "-Xmx512m"
+      TOKEN_SIGNING_KEY: "w8OzxLbEt8S3xLfEt8S3xLfEt8S3xLfEt8S3xLfEt8Q="
+    depends_on:
+      user_postgres:
+        condition: service_healthy
+    networks:
+      - knowdown_network
+
+  user_postgres:
+    image: postgres:14
+    environment:
+      - POSTGRES_USER=new_db
+      - POSTGRES_PASSWORD=123
+      - POSTGRES_DB=new_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - user_postgres:/var/lib/postgresql/data
+    networks:
+      - knowdown_network
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U new_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  question_service:
+    build:
+      context: ./question_service
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+    depends_on:
+      question_postgres:
+        condition: service_healthy
+    networks:
+      - knowdown_network
+
+
+  question_postgres:
+    image: postgres:14
+    restart: unless-stopped
     environment:
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=1234
       - POSTGRES_DB=questions
     ports:
-      - '5432:5432'
+      - '5434:5432'
+    volumes:
+      - question_postgres:/var/lib/postgresql/data
     networks:
-      - app-network
+      - knowdown_network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U admin" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
-  spring-boot-app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8083:8083"
-    depends_on:
-      - db
-    networks:
-      - app-network
+volumes:
+  lobby_postgres:
+    name: lobby_postgres_data
+  user_postgres:
+    name: user_postgres_data
+  question_postgres:
+    name: question_postgres_data
 
 networks:
-  app-network:
+  knowdown_network:
     driver: bridge
