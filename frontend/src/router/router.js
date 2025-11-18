@@ -26,6 +26,7 @@ const routes = [
   },
   { path: "/auth/register", component: Register, meta: { requireAuth: false } },
   { path: "/auth/login", component: Login, meta: { requireAuth: false } },
+  { path: "/test_arena", component: Arena, meta: { requireAuth: false } },
   { path: "/statistics", component: Statistics, meta: { requireAuth: true } },
   {
     path: "/lobby/:lobby_id",
@@ -45,7 +46,6 @@ const routes = [
   { path: "/users/me", component: Me, meta: { requireAuth: true } },
   { path: "/users/:id", component: Profile, meta: { requireAuth: true } },
   { path: "/game/:game_id", component: Game, meta: { requireAuth: true } },
-  // { path: "/arena", component: Arena, meta: { requireAuth: true } }
 ];
 
 const router = createRouter({
@@ -54,9 +54,12 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  if (to.meta.requireAuth == false) {
+  console.log("hello", to.path);
+  if (to.meta.requireAuth === false) {
+    console.log("nice");
     next();
   } else {
+    console.log("suck");
     const store = useUserStore();
     if (to.meta.requireAuth == true && store.isLogged == false) {
       return next({ path: "/auth/login" });
