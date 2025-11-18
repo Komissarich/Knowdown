@@ -1,6 +1,6 @@
 <template>
   <VApp>
-    <Navbar v-if="route.meta.showNavbar != false"></Navbar>
+    <Navbar v-if="route.meta.showNavbar !== false"></Navbar>
     <VMain>
       <RouterView v-slot="{ Component }">
         <v-fade-transition hide-on-leave>
