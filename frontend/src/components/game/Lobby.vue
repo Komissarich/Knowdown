@@ -91,7 +91,7 @@ import { onMounted, onUnmounted, ref } from "vue";
 import { Client, Stomp } from "@stomp/stompjs";
 import axios from "axios";
 import router from "@/router/router.js";
-import {useLobbyStore} from "@/stores/lobby.js";
+import { useLobbyStore } from "@/stores/lobby.js";
 const userStore = useUserStore();
 
 const players = ref([]);
@@ -111,7 +111,10 @@ async function playGame() {
     .then(function (response) {
       console.log(response.data.isCreator);
       console.log(players.value);
-      router.push({ path: "/game/" + route.params.lobby_id, params: players.value});
+      router.push({
+        path: "/game/" + route.params.lobby_id,
+        params: players.value,
+      });
     })
     .catch(function (error) {
       console.log(error);
@@ -219,7 +222,7 @@ function updatePlayerList() {
 
 .v-card .v-list-item:hover {
   background-color: rgb(89, 202, 202);
-  box-shadow: 10px 5px 10px 1px rgba(0, 0, 0, 0.2); /* Замена elevation */
+  box-shadow: 10px 5px 10px 1px rgba(0, 0, 0, 0.2);
   transition: box-shadow 300ms;
 }
 </style>

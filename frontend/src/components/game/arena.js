@@ -8,6 +8,7 @@ class Arena {
     const dx = player.x - this.centerX;
     const dy = player.y - this.centerY;
     const distance = Math.sqrt(dx * dx + dy * dy);
+    let a = [];
 
     if (distance > this.radius) {
       const angle = Math.atan2(dy, dx);
