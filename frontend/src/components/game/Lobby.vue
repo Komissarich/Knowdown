@@ -100,23 +100,25 @@ var chat = ref("");
 const message = ref("");
 
 async function playGame() {
+  console.log(route.params.lobby_id, userStore.username);
   axios({
     method: "post",
     url: "/api/lobby/isCreator",
     data: {
-      name: route.params.lobbyName,
+      lobby_name: route.params.lobby_id,
       username: userStore.username,
     },
   })
     .then(function (response) {
-      console.log(response.data.isCreator);
-      console.log(players.value);
-      router.push({
-        path: "/game/" + route.params.lobby_id,
-        params: players.value,
-      });
+      if (response.data == true) {
+        router.push({
+          path: "/game/" + route.params.lobby_id,
+          params: players.value,
+        });
+      }
     })
     .catch(function (error) {
+      console.log("bad");
       console.log(error);
     });
 }
@@ -124,11 +126,11 @@ const client = new Client({
   // brokerURL: "ws://localhost:8081/ws", // Replace with your WebSocket URL
   brokerURL: "/ws/",
   debug: function (str) {
-    console.log(str); // Optional: enable debug logging
+    console.log(str);
   },
-  reconnectDelay: 5000, // Optional: reconnect after 5 seconds on disconnect
-  heartbeatIncoming: 4000, // Optional: server heartbeat interval
-  heartbeatOutgoing: 4000, // Optional: client heartbeat interval
+  reconnectDelay: 5000,
+  heartbeatIncoming: 4000,
+  heartbeatOutgoing: 4000,
 });
 
 client.onStompError = function (frame) {

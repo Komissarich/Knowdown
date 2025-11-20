@@ -38,15 +38,16 @@ public class LobbyController {
         System.out.println(message);
         ObjectMapper objectMapper = new ObjectMapper();
         Player player = objectMapper.readValue(message, Player.class);
+       
         lobbyService.AddPlayerInLobby(lobbyId, player);
         System.out.println("giving "+ lobbyService.ListPlayers(lobbyId));
         return lobbyService.ListPlayers(lobbyId);
     }
 
-    @GetMapping("/isCreator")
-
+    @PostMapping("/isCreator")
     public boolean isAuthor(@RequestBody isCreatorRequest request) {
         System.out.println("check if creator");
+        System.out.println(lobbyService.checkCreator(request.getLobby_name(), request.getUsername()));
         return lobbyService.checkCreator(request.getLobby_name(), request.getUsername());
     }
 

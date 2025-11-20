@@ -62,12 +62,10 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  console.log("hello", to.meta);
+  // console.log("hello", to.meta);
   if (to.meta.requireAuth === false) {
-    console.log("nice");
     next();
   } else {
-    console.log("suck");
     const store = useUserStore();
     if (to.meta.requireAuth == true && store.isLogged == false) {
       return next({ path: "/auth/login" });
