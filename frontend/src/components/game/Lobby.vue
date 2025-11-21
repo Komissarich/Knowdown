@@ -81,6 +81,7 @@
         </v-card>
       </v-col>
     </v-row>
+    <CountDown />
   </v-container>
 </template>
 
@@ -89,9 +90,11 @@ import { useRoute } from "vue-router";
 import { useUserStore } from "@/stores/user";
 import { onMounted, onUnmounted, ref } from "vue";
 import { Client, Stomp } from "@stomp/stompjs";
+import CountDown from "./CountDown.vue";
 import axios from "axios";
 import router from "@/router/router.js";
 import { useLobbyStore } from "@/stores/lobby.js";
+
 const userStore = useUserStore();
 
 const players = ref([]);
@@ -111,22 +114,34 @@ async function playGame() {
   })
     .then(function (response) {
       if (response.data == true) {
-        router.push({
-          path: "/game/" + route.params.lobby_id,
-          params: players.value,
-        });
+        axios({
+          method: "post",
+          url: "/api/lobby/start",
+          params: {
+            lobby_name: route.params.lobby_id,
+            username: userStore.username,
+          },
+        })
+          .then(function (response) {
+            console.log("hello");
+            // router.push({
+            //   path: "/game/" + route.params.lobby_id,
+            //   params: players.value,
+            // });
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
       }
     })
     .catch(function (error) {
-      console.log("bad");
       console.log(error);
     });
 }
 const client = new Client({
-  // brokerURL: "ws://localhost:8081/ws", // Replace with your WebSocket URL
   brokerURL: "/ws/",
   debug: function (str) {
-    console.log(str);
+    // console.log(str);
   },
   reconnectDelay: 5000,
   heartbeatIncoming: 4000,
@@ -161,6 +176,13 @@ client.onConnect = function (frame) {
         var player = parsed_body[i];
         players.value.push(player);
       }
+    }
+  );
+  client.subscribe(
+    "/topic/lobby/" + route.params.lobby_id + "/countdown",
+    function (message) {
+      console.log("Received countdown:", message.body);
+      var parsed_message = JSON.parse(message.body);
     }
   );
   updatePlayerList();
