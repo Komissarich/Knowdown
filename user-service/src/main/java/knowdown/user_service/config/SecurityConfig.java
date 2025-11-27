@@ -44,6 +44,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable()) // Отключаем CSRF
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/friends/").authenticated()
                         .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/health").permitAll()
                         .anyRequest().authenticated()
                 )

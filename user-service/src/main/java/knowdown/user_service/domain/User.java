@@ -2,6 +2,9 @@ package knowdown.user_service.domain;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "users")
 
@@ -14,6 +17,9 @@ public class User {
     @Column(unique = true, nullable = false)
     private String username;
 
+//    @Column(unique = true, nullable = false)
+//    private String email;
+
     @Column(nullable = false)
     private String password;
 
@@ -22,6 +28,7 @@ public class User {
     public User(String username, String password){
         this.password = password;
         this.username = username;
+//        this.email = email;
     }
 
     public Long getId() { return id; }
@@ -33,5 +40,21 @@ public class User {
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
 
+//    public String getEmail() { return email; }
+//    public void setEmail(String email) { this.email = email; }
+
+
+    //связи друзьяшик
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Friendship> friendships = new ArrayList<>();
+
+    @OneToMany(mappedBy = "friend", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Friendship> friendOf = new ArrayList<>();
+
+    public List<Friendship> getFriendships() { return friendships; }
+    public void setFriendships(List<Friendship> friendships) { this.friendships = friendships; }
+
+    public List<Friendship> getFriendOf() { return friendOf; }
+    public void setFriendOf(List<Friendship> friendOf) { this.friendOf = friendOf; }
 
 }
