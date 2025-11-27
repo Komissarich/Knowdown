@@ -81,6 +81,7 @@
         </v-card>
       </v-col>
     </v-row>
+    <CountDown />
   </v-container>
 </template>
 
@@ -89,9 +90,11 @@ import { useRoute } from "vue-router";
 import { useUserStore } from "@/stores/user";
 import { onMounted, onUnmounted, ref } from "vue";
 import { Client, Stomp } from "@stomp/stompjs";
+import CountDown from "./CountDown.vue";
 import axios from "axios";
 import router from "@/router/router.js";
-import {useLobbyStore} from "@/stores/lobby.js";
+import { useLobbyStore } from "@/stores/lobby.js";
+
 const userStore = useUserStore();
 
 const players = ref([]);
@@ -100,32 +103,49 @@ var chat = ref("");
 const message = ref("");
 
 async function playGame() {
+  console.log(route.params.lobby_id, userStore.username);
   axios({
     method: "post",
     url: "/api/lobby/isCreator",
     data: {
-      name: route.params.lobbyName,
+      lobby_name: route.params.lobby_id,
       username: userStore.username,
     },
   })
     .then(function (response) {
-      console.log(response.data.isCreator);
-      console.log(players.value);
-      router.push({ path: "/game/" + route.params.lobby_id, params: players.value});
+      if (response.data == true) {
+        axios({
+          method: "post",
+          url: "/api/lobby/start",
+          params: {
+            lobby_name: route.params.lobby_id,
+            username: userStore.username,
+          },
+        })
+          .then(function (response) {
+            console.log("hello");
+            // router.push({
+            //   path: "/game/" + route.params.lobby_id,
+            //   params: players.value,
+            // });
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+      }
     })
     .catch(function (error) {
       console.log(error);
     });
 }
 const client = new Client({
-  // brokerURL: "ws://localhost:8081/ws", // Replace with your WebSocket URL
   brokerURL: "/ws/",
   debug: function (str) {
-    console.log(str); // Optional: enable debug logging
+    // console.log(str);
   },
-  reconnectDelay: 5000, // Optional: reconnect after 5 seconds on disconnect
-  heartbeatIncoming: 4000, // Optional: server heartbeat interval
-  heartbeatOutgoing: 4000, // Optional: client heartbeat interval
+  reconnectDelay: 5000,
+  heartbeatIncoming: 4000,
+  heartbeatOutgoing: 4000,
 });
 
 client.onStompError = function (frame) {
@@ -156,6 +176,13 @@ client.onConnect = function (frame) {
         var player = parsed_body[i];
         players.value.push(player);
       }
+    }
+  );
+  client.subscribe(
+    "/topic/lobby/" + route.params.lobby_id + "/countdown",
+    function (message) {
+      console.log("Received countdown:", message.body);
+      var parsed_message = JSON.parse(message.body);
     }
   );
   updatePlayerList();
@@ -219,7 +246,7 @@ function updatePlayerList() {
 
 .v-card .v-list-item:hover {
   background-color: rgb(89, 202, 202);
-  box-shadow: 10px 5px 10px 1px rgba(0, 0, 0, 0.2); /* Замена elevation */
+  box-shadow: 10px 5px 10px 1px rgba(0, 0, 0, 0.2);
   transition: box-shadow 300ms;
 }
 </style>

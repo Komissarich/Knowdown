@@ -1,3 +1,4 @@
+version: "3.8"
 
 services:
   frontend:
@@ -82,32 +83,46 @@ services:
     restart: unless-stopped
 
   question_service:
-      build:
-        context: ./question_service
-        dockerfile: Dockerfile
-      ports:
-        - "8083:8083"
-      depends_on:
-        - libretranslate
-      networks:
-        - knowdown_network
+    build:
+      context: ./question_service
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+    depends_on:
+      question_postgres:
+        condition: service_healthy
+    networks:
+      - knowdown_network
 
-  libretranslate:
-      image: libretranslate/libretranslate
-      ports:
-        - "5000:5000"
-      environment:
-        - LT_LOAD_ONLY=en,ru
-      networks:
-        - knowdown_network
+
+  question_postgres:
+    image: postgres:14
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=1234
+      - POSTGRES_DB=questions
+    ports:
+      - '5434:5432'
+    volumes:
+      - question_postgres:/var/lib/postgresql/data
+    networks:
+      - knowdown_network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U admin" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
 volumes:
   lobby_postgres:
     name: lobby_postgres_data
   user_postgres:
     name: user_postgres_data
+  question_postgres:
+    name: question_postgres_data
 
 networks:
   knowdown_network:
     driver: bridge
-

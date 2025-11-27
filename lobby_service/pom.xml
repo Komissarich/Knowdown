@@ -11,7 +11,8 @@
 	<groupId>com.example</groupId>
 	<artifactId>lobby_service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>lobby_service</name>
+    <packaging>jar</packaging>
+    <name>lobby_service</name>
 	<description>lobby service for Knowdown project</description>
 	<url/>
 	<licenses>
@@ -20,7 +21,8 @@
 	<developers>
 		<developer/>
 	</developers>
-	<scm>
+
+    <scm>
 		<connection/>
 		<developerConnection/>
 		<tag/>
@@ -51,8 +53,19 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>com.example.lobby_service.LobbyServiceApplication</mainClass> <!-- замени на свой -->
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
 			</plugin>
-		</plugins>
+
+        </plugins>
 	</build>
 
 </project>

@@ -1,13 +1,16 @@
 package com.example.lobby_service.Repositories.Entities;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Lobby {
 
     private List<Player> lobbyPlayers = new ArrayList<Player>();
+    private final Set<String> playerNames = new HashSet<>();
     List<ChatMessage> lobbyMessages = new ArrayList<ChatMessage>();
 
     private String lobbyId;
@@ -25,8 +28,9 @@ public class Lobby {
     }
 
     public void AddPlayer(Player player) {
-
-        this.lobbyPlayers.add(player);
+    if (playerNames.add(player.username)) {
+        lobbyPlayers.add(player);
+    }
     }
 
     public void RemovePlayer(Player player) {

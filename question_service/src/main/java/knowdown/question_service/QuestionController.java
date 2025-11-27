@@ -1,5 +1,7 @@
 package knowdown.question_service;
 
+import knowdown.question_service.dto.QuestionRequest;
+import knowdown.question_service.dto.QuestionResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -17,13 +19,12 @@ public class QuestionController {
     }
 
     @PostMapping
-    public ResponseEntity<Question> getQuestion(
+    public ResponseEntity<QuestionResponse> getQuestion(
             @RequestBody QuestionRequest request
     ) {
-        log.info("Called getQuestion with parameters: difficulty = " + request.difficulty() + "; type = "+request.type());
-
+        log.info("Called getQuestion with parameters: difficulty = " + request.difficulty() + "; type = "+request.type() + "; category = " + request.category());
         try {
-            return ResponseEntity.ok(questionService.getQuestionFromApi(request.type(), request.difficulty()));
+            return ResponseEntity.ok(questionService.getQuestionFromDatabase(request.difficulty(), request.type(), request.category()));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
