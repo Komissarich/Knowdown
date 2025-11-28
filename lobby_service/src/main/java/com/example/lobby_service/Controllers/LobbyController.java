@@ -1,11 +1,7 @@
 package com.example.lobby_service.Controllers;
 
 import com.example.lobby_service.Repositories.CountDownService;
-import com.example.lobby_service.Repositories.Entities.ChatMessage;
-import com.example.lobby_service.Repositories.Entities.isCreatorRequest;
-import com.example.lobby_service.Repositories.Entities.LobbyRequest;
-import com.example.lobby_service.Repositories.Entities.LobbyResponse;
-import com.example.lobby_service.Repositories.Entities.Player;
+import com.example.lobby_service.Repositories.Entities.*;
 import com.example.lobby_service.Repositories.LobbyService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,10 +19,13 @@ import java.util.List;
 @RequestMapping("/api/lobby")
 @CrossOrigin(origins = "http://localhost:8080", allowedHeaders = "*", methods = {RequestMethod.POST, RequestMethod.GET, RequestMethod.OPTIONS})
 public class LobbyController {
-    private final LobbyService lobbyService = new LobbyService();
+    @Autowired
+    private LobbyService lobbyService;
 
     @Autowired
     private CountDownService quizCountdownService;
+
+
     @MessageMapping("/{lobbyId}/send_message")
     @SendTo("/topic/lobby/{lobbyId}/messages")
     public String processChatMessages(@DestinationVariable String lobbyId, String message) throws JsonProcessingException {
@@ -62,9 +61,7 @@ public class LobbyController {
                                        @RequestParam String username) {
 
         System.out.println("starting the countdown");
-        System.out.println(lobby_name);
-        System.out.println(username);
-        System.out.println(lobbyService.checkCreator(lobby_name, username));
+
         if (!lobbyService.checkCreator(lobby_name, username)) {
             return ResponseEntity.status(403).body("Только создатель может начать");
         }
@@ -72,6 +69,7 @@ public class LobbyController {
         return ResponseEntity.ok().build();
     }
 
+    
     @PostMapping("/create")
     public ResponseEntity<LobbyResponse> createLobby(@RequestBody LobbyRequest request) {
         System.out.println("creating lobby");
@@ -83,5 +81,25 @@ public class LobbyController {
         );
         return ResponseEntity.ok(new LobbyResponse(lobbyId));
     }
+
+    @PostMapping("/answer")
+    public String answer(@RequestBody AnswerRequest request) {
+        System.out.println("handling answer");
+        System.out.println(request.getName() +  request.getLobbyId() + request.getTimestamp());
+        // Сохраняем ответ с точностью до миллисекунд
+        lobbyService.AddAnswer(request.getName(), request.getLobbyId(), request.getTimestamp());
+        return "added answer";
+    }
+
+    @PostMapping("/finish")
+    public void finish(@RequestParam String lobbyId) {
+        System.out.println("finishing answer");
+        // Сохраняем ответ с точностью до миллисекунд
+        lobbyService.finishQuestion(lobbyId);
+    }
+
+
+
+
 
 }

@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RestController
-@RequestMapping("/question")
+@RequestMapping("/api/questions")
 public class QuestionController {
     private static final Logger log = LoggerFactory.getLogger(QuestionController.class);
     private final QuestionService questionService;
@@ -18,7 +18,7 @@ public class QuestionController {
         this.questionService = questionService;
     }
 
-    @PostMapping
+    @PostMapping("question")
     public ResponseEntity<QuestionResponse> getQuestion(
             @RequestBody QuestionRequest request
     ) {

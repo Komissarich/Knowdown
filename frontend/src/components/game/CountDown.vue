@@ -31,10 +31,6 @@ onMounted(() => {
     heartbeatOutgoing: 4000,
   });
 
-  client.onStompError = function (frame) {
-    console.error("Broker reported error:", frame.headers["message"]);
-    console.error("Additional details:", frame.body);
-  };
   client.onConnect = function (frame) {
     console.log("Timer Connected to STOMP broker!");
     client.subscribe(
@@ -55,7 +51,7 @@ onMounted(() => {
           isGo.value = true;
 
           timeout = setTimeout(() => {
-            router.push(`game/${route.params.lobby_id}`);
+            router.push(`/quiz/${route.params.lobby_id}`);
           }, 500);
         }
       }
@@ -82,38 +78,13 @@ onUnmounted(() => {
 }
 
 .countdown-number {
-  font-size: 160px;
+  font-size: 130px;
   font-weight: 900;
   color: white;
-  text-shadow: 0 0 30px rgba(255, 255, 255, 0.8);
-  animation: pulse 1s infinite alternate;
+  text-shadow: 0 0 30px rgba(248, 0, 0, 1);
 }
 
 .go {
   color: #00ff41;
-  font-size: 180px;
-  animation: explode 0.8s ease-out forwards;
-}
-
-@keyframes pulse {
-  from {
-    transform: scale(0.9);
-    opacity: 0.8;
-  }
-  to {
-    transform: scale(1.1);
-    opacity: 1;
-  }
-}
-
-@keyframes explode {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(2.5);
-    opacity: 0;
-  }
 }
 </style>

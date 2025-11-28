@@ -121,17 +121,9 @@ async function playGame() {
             lobby_name: route.params.lobby_id,
             username: userStore.username,
           },
-        })
-          .then(function (response) {
-            console.log("hello");
-            // router.push({
-            //   path: "/game/" + route.params.lobby_id,
-            //   params: players.value,
-            // });
-          })
-          .catch(function (error) {
-            console.log(error);
-          });
+        }).catch(function (error) {
+          console.log(error);
+        });
       }
     })
     .catch(function (error) {

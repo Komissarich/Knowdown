@@ -1,11 +1,6 @@
 package com.example.lobby_service.Repositories.Entities;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
 
 public class Lobby {
 
@@ -13,6 +8,7 @@ public class Lobby {
     private final Set<String> playerNames = new HashSet<>();
     List<ChatMessage> lobbyMessages = new ArrayList<ChatMessage>();
 
+    public List<AnswerRequest> answers = new ArrayList<AnswerRequest>();
     private String lobbyId;
     private String name;
     private int maxPlayersCount;
@@ -27,6 +23,31 @@ public class Lobby {
         this.name= name;
     }
 
+    public void AddAnswer(String name, Long timestamp) {
+
+        answers.add(new AnswerRequest(name, this.lobbyId, timestamp));
+
+    }
+
+    public Map<String, Integer> finishQuestion() {
+        List<AnswerRequest> answers_sorted = answers.stream().sorted(Comparator.comparingLong(AnswerRequest::getTimestamp)).toList();
+        Map<String, Integer> points = new HashMap<>();
+        for (int i = 0; i < answers_sorted.size(); i++) {
+            String name = answers_sorted.get(i).getName();
+            int score = switch (i) {
+                case 0 -> 4;
+                case 1 -> 3;
+                case 2 -> 2;
+                default -> 1;
+            };
+            points.put(name, score);
+        }
+        System.out.println("points:");
+        System.out.println(points);
+        return points;
+        // Отправляем ВСЕМ в лобби
+
+    }
     public void AddPlayer(Player player) {
     if (playerNames.add(player.username)) {
         lobbyPlayers.add(player);

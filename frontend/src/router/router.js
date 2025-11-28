@@ -15,7 +15,7 @@ import { useUserStore } from "@/stores/user";
 import Profile from "@/components/user/Profile.vue";
 import CreateLobby from "@/components/game/CreateLobby.vue";
 import Arena from "@/components/game/Arena.vue";
-import Game from "@/components/game/Game.vue";
+import Quiz from "@/components/game/Quiz.vue";
 
 const routes = [
   {
@@ -50,8 +50,8 @@ const routes = [
   { path: "/users/me", component: Me, meta: { requireAuth: true } },
   { path: "/users/:id", component: Profile, meta: { requireAuth: true } },
   {
-    path: "/game/:game_id",
-    component: Game,
+    path: "/quiz/:quiz_id",
+    component: Quiz,
     meta: { requireAuth: true, showNavbar: false },
   },
 ];
@@ -62,7 +62,6 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  // console.log("hello", to.meta);
   if (to.meta.requireAuth === false) {
     next();
   } else {
