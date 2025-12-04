@@ -21,7 +21,7 @@
         </v-card>
       </v-col>
       <v-col cols="12" md="6">
-        <v-card style="width: 300px">
+        <v-card style="width: 350px">
           <div style="text-align: center">
             <h2 class="mx-auto">{{ route.params.lobbyName }}</h2>
           </div>
@@ -37,6 +37,18 @@
               :src="`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${route.params.lobby_id}`"
             ></v-img>
           </v-card-text>
+
+          <v-range-slider
+            v-model="questionCount"
+            color="light-green-lighten-4"
+            max-width="350"
+            :max="20"
+            :min="5"
+            prepend-icon="mdi-account"
+            step="1"
+            label="Question count"
+            thumb-label="true"
+          ></v-range-slider>
         </v-card>
       </v-col>
     </v-row>
@@ -72,12 +84,30 @@
         </v-card>
       </v-col>
       <v-col cols="12" md="6">
-        <v-card style="width: 300px">
+        <v-card style="width: 350px">
           <v-card-title>Actions</v-card-title>
           <v-card-actions>
             <v-btn color="primary" @click="playGame">START</v-btn>
             <v-btn color="error">EXIT</v-btn>
           </v-card-actions>
+          <v-combobox
+            v-model="chips"
+            :items="items"
+            label="Categories: "
+            variant="solo"
+            chips
+            clearable
+            closable-chips
+            multiple
+            class="mx-4"
+          >
+            <template v-slot:chip="{ props, item }">
+              <v-chip v-bind="props">
+                <strong>{{ item.raw }}</strong
+                >&nbsp;
+              </v-chip>
+            </template>
+          </v-combobox>
         </v-card>
       </v-col>
     </v-row>
@@ -96,14 +126,64 @@ import router from "@/router/router.js";
 import { useLobbyStore } from "@/stores/lobby.js";
 
 const userStore = useUserStore();
+const questionCount = ref(20);
 
 const players = ref([]);
 const route = useRoute();
 var chat = ref("");
 const message = ref("");
+const items = [
+  "General Knowledge",
+  "Books",
+  "Films",
+  "Movies",
+  "Music",
+  "Television",
+  "Video Games",
+  "Board Games",
+  "Science & Nature",
+  "Mathematics",
+  "Mythology",
+  "Sports",
+  "Geography",
+  "History",
+  "Politics",
+  "Art",
+  "Animals",
+  "Celebrities",
+  "Vehicles",
+  "Celebrities",
+  "Anime",
+  "Cartoons",
+];
 
+const chips = ref([
+  "General Knowledge",
+  "Books",
+  "Films",
+  "Movies",
+  "Music",
+  "Television",
+  "Video Games",
+  "Board Games",
+  "Science & Nature",
+  "Mathematics",
+  "Mythology",
+  "Sports",
+  "Geography",
+  "History",
+  "Politics",
+  "Art",
+  "Animals",
+  "Celebrities",
+  "Vehicles",
+  "Celebrities",
+  "Anime",
+  "Cartoons",
+]);
 async function playGame() {
   console.log(route.params.lobby_id, userStore.username);
+  console.log(chips.value);
   axios({
     method: "post",
     url: "/api/lobby/isCreator",
@@ -124,6 +204,28 @@ async function playGame() {
         }).catch(function (error) {
           console.log(error);
         });
+
+        axios({
+          method: "post",
+          url: "/api/lobby/" + route.params.lobby_id + "/get_questions",
+          data: {
+            categories: chips.value,
+            question_count: parseInt(questionCount.value),
+          },
+          params: {
+            lobbyId: route.params.lobby_id,
+          },
+        })
+          .then(function (response) {
+            console.log(response.data);
+            localStorage.setItem(
+              "question_count",
+              parseInt(questionCount.value)
+            );
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
       }
     })
     .catch(function (error) {
@@ -177,6 +279,18 @@ client.onConnect = function (frame) {
       var parsed_message = JSON.parse(message.body);
     }
   );
+
+  client.subscribe(
+    "/topic/lobby/" + route.params.lobby_id + "/get_questions",
+    function (message) {
+      console.log("Received questions:", message.body);
+      var parsed_message = JSON.parse(message.body);
+      localStorage.setItem(
+        "current_questions",
+        JSON.stringify(parsed_message.questions.quiz_questions)
+      );
+    }
+  );
   updatePlayerList();
 };
 client.activate();
@@ -209,7 +323,7 @@ function updatePlayerList() {
 
 <style lang="css" scoped>
 #chat {
-  background-color: rgb(123, 150, 190);
+  /* background-color: rgb(123, 150, 190); */
 }
 
 #chat:hover {
@@ -219,7 +333,7 @@ function updatePlayerList() {
 
 #players_list {
   padding: 10px;
-  background-color: rgb(151, 204, 207);
+  /* background-color: rgb(151, 204, 207); */
 }
 
 #players_list:hover {

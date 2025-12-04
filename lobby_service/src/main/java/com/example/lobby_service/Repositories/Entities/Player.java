@@ -1,18 +1,103 @@
 package com.example.lobby_service.Repositories.Entities;
 
 public class Player {
-    public String username;
-//    public String id;
-    public Player() {}
-    public Player( String name) {
-//        this.id = id;
-        this.username = name;
-    }
+    private String username;
+    //статы персонажа
+    private float heatlh;
+    private float move_speed;
+    private float attack_speed;
+    private float melee_power;
+    private float melee_range;
+    private float knockback_power;
+    private float vampirism;
+    private float heal_rate;
+    private float dodge_chance;
+
 
     @Override
     public String toString() {
         return "Player{" +
                 "username='" + username + '\'' +
                 '}';
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public float getHeatlh() {
+        return heatlh;
+    }
+
+    public void setHeatlh(float heatlh) {
+        this.heatlh = heatlh;
+    }
+
+    public float getMove_speed() {
+        return move_speed;
+    }
+
+    public void setMove_speed(float move_speed) {
+        this.move_speed = move_speed;
+    }
+
+    public float getAttack_speed() {
+        return attack_speed;
+    }
+
+    public void setAttack_speed(float attack_speed) {
+        this.attack_speed = attack_speed;
+    }
+
+    public float getMelee_power() {
+        return melee_power;
+    }
+
+    public void setMelee_power(float melee_power) {
+        this.melee_power = melee_power;
+    }
+
+    public float getMelee_range() {
+        return melee_range;
+    }
+
+    public void setMelee_range(float melee_range) {
+        this.melee_range = melee_range;
+    }
+
+    public float getKnockback_power() {
+        return knockback_power;
+    }
+
+    public void setKnockback_power(float knockback_power) {
+        this.knockback_power = knockback_power;
+    }
+
+    public float getVampirism() {
+        return vampirism;
+    }
+
+    public void setVampirism(float vampirism) {
+        this.vampirism = vampirism;
+    }
+
+    public float getHeal_rate() {
+        return heal_rate;
+    }
+
+    public void setHeal_rate(float heal_rate) {
+        this.heal_rate = heal_rate;
+    }
+
+    public float getDodge_chance() {
+        return dodge_chance;
+    }
+
+    public void setDodge_chance(float dodge_chance) {
+        this.dodge_chance = dodge_chance;
     }
 }

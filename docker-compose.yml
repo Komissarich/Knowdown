@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   frontend:
     build:
@@ -94,7 +92,6 @@ services:
     networks:
       - knowdown_network
 
-
   question_postgres:
     image: postgres:14
     restart: unless-stopped
@@ -103,13 +100,13 @@ services:
       - POSTGRES_PASSWORD=1234
       - POSTGRES_DB=questions
     ports:
-      - '5434:5432'
+      - "5434:5432"
     volumes:
       - question_postgres:/var/lib/postgresql/data
     networks:
       - knowdown_network
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U admin" ]
+      test: ["CMD-SHELL", "pg_isready -U admin"]
       interval: 10s
       timeout: 5s
       retries: 5

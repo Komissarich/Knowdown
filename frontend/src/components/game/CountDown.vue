@@ -86,5 +86,6 @@ onUnmounted(() => {
 
 .go {
   color: #00ff41;
+  text-shadow: 0 0 30px rgb(60, 233, 37);
 }
 </style>

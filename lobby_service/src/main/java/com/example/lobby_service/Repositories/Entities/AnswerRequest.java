@@ -10,9 +10,7 @@ public class AnswerRequest {
         this.name = name;
         this.lobbyId = lobbyId;
         this.timestamp = timestamp;
-
     }
-
     public String getName() {
         return name;
     }

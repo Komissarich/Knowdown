@@ -1,14 +1,23 @@
 <template>
+  <v-dialog v-model="isActive" max-width="500" persistent>
+    <v-card title="Ошибка">
+      <v-card-text class="text-center py-6">
+        <v-icon icon="mdi-alert" color="error" size="64"></v-icon>
+        <p class="text-h6 mt-4">
+          Ошибка регистрации: попробуйте другой никнейм, возможно ваш уже занят
+        </p>
+      </v-card-text>
+
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn color="primary" @click="isActive = false"> Понял </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
   <v-parallax src="https://cdn.vuetifyjs.com/images/parallax/material.jpg">
     <div class="d-flex justify-center align-center" style="height: 60vh">
       <VSheet width="350" height="485" :elevation="16">
-        <v-alert
-          text="Coulnd't register user"
-          v-model="regAlert"
-          type="error"
-        ></v-alert>
-
-        <VForm ref="form" fast-fail @submit.prevent="submit">
+        <VForm fast-fail ref="form" @submit.prevent="submit">
           <VTextField
             class="mt-10 mx-auto"
             width="320"
@@ -76,24 +85,23 @@ const loading = ref(false);
 const userName = ref("");
 const userPassword = ref("");
 const userEmail = ref("");
-const regAlert = ref(false);
 const store = useUserStore();
-
+const isActive = ref(false);
 async function submit(event) {
   const { valid } = await form.value.validate();
-
+  console.log(valid);
   if (valid) {
     loading.value = true;
 
     try {
-      store.register(userName.value, userEmail.value, userPassword.value);
+      await store.register(userName.value, userEmail.value, userPassword.value);
       loading.value = false;
       router.push("/");
     } catch (error) {
       console.log(error);
+      isActive.value = true;
+      loading.value = false;
     }
-  } else {
-    regAlert.value = !regAlert.value;
   }
 }
 
@@ -112,8 +120,8 @@ const emailRules = [
 ];
 const passwordRules = [
   (value) => {
-    if (value?.length >= 3) return true;
-    return "Password must be at least 3 characters.";
+    if (value?.length >= 6) return true;
+    return "Password must be at least 6 characters.";
   },
 ];
 </script>

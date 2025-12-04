@@ -15,18 +15,17 @@ public class Lobby {
     private boolean isPrivate;
     private Player creator;
 
-    public Lobby(boolean isPrivate, int maxPlayersCount, String lobbyId, String name, Player creator) {
+    public Lobby(boolean isPrivate, int maxPlayersCount, String lobbyId, String name, String name_of_creator) {
         this.isPrivate = isPrivate;
         this.maxPlayersCount = maxPlayersCount;
         this.lobbyId = lobbyId;
-        this.creator = creator;
+        this.creator = new Player();
+        this.creator.setUsername(name_of_creator);
         this.name= name;
     }
 
     public void AddAnswer(String name, Long timestamp) {
-
         answers.add(new AnswerRequest(name, this.lobbyId, timestamp));
-
     }
 
     public Map<String, Integer> finishQuestion() {
@@ -44,14 +43,13 @@ public class Lobby {
         }
         System.out.println("points:");
         System.out.println(points);
+        this.clearAnswers();
         return points;
-        // Отправляем ВСЕМ в лобби
-
     }
     public void AddPlayer(Player player) {
-    if (playerNames.add(player.username)) {
-        lobbyPlayers.add(player);
-    }
+        if (playerNames.add(player.getUsername())) {
+            lobbyPlayers.add(player);
+        }
     }
 
     public void RemovePlayer(Player player) {
@@ -118,5 +116,8 @@ public class Lobby {
 
     public void setCreator(Player creator) {
         this.creator = creator;
+    }
+    public void clearAnswers() {
+        this.answers.clear();
     }
 }

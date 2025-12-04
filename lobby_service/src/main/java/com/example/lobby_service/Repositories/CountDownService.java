@@ -10,22 +10,18 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
-  // ← эта аннотация сама создаст конструктор
 public class CountDownService {
-    private final SimpMessagingTemplate messagingTemplate;
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     private final Map<String, ScheduledFuture<?>> tasks = new ConcurrentHashMap<>();
 
     @Autowired
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
-    public CountDownService(SimpMessagingTemplate messagingTemplate) {
-        this.messagingTemplate = messagingTemplate;
 
-    }
 
     public void startCountdown(String lobbyName) {
-        // Отменяем, если уже был
         cancelIfRunning(lobbyName);
 
         AtomicInteger count = new AtomicInteger(7);

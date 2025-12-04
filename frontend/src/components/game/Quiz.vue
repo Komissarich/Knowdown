@@ -62,34 +62,41 @@ const route = useRoute();
 const question = ref({});
 let loaded = ref(false);
 const userStore = useUserStore();
+const question_index = ref(0);
+const current_questions = ref([]);
+
 onMounted(() => {
-  axios({
-    method: "post",
-    url: "/api/questions/question",
+  current_questions.value = JSON.parse(
+    localStorage.getItem("current_questions")
+  );
+  setQuestion();
+  // axios({
+  //   method: "post",
+  //   url: "/api/questions/question",
 
-    data: {
-      difficulty: "EASY",
-      type: "MULTIPLE_CHOICE",
-      category: "GENERAL_KNOWLEDGE",
-    },
-  })
-    .then(function (response) {
-      console.log(response.data);
-      question.value.text = response.data.question;
-      question.value.category = response.data.category;
-      question.value.difficulty = response.data.difficulty;
-      question.value.answers = response.data.incorrectAnswers;
+  //   data: {
+  //     difficulty: "EASY",
+  //     type: "MULTIPLE_CHOICE",
+  //     category: "GENERAL_KNOWLEDGE",
+  //   },
+  // })
+  //   .then(function (response) {
+  //     console.log(response.data);
+  //     question.value.text = response.data.question;
+  //     question.value.category = response.data.category;
+  //     question.value.difficulty = response.data.difficulty;
+  //     question.value.answers = response.data.incorrectAnswers;
 
-      const index = Math.floor(Math.random() * 3);
+  //     const index = Math.floor(Math.random() * 3);
 
-      question.value.answers.splice(index, 0, response.data.correctAnswer);
-      question.value.correct = response.data.correctAnswer;
-      loaded.value = true;
-      console.log(question.value);
-    })
-    .catch(function (error) {
-      console.log(error);
-    });
+  //     question.value.answers.splice(index, 0, response.data.correctAnswer);
+  //     question.value.correct = response.data.correctAnswer;
+  //     loaded.value = true;
+  //     console.log(question.value);
+  //   })
+  //   .catch(function (error) {
+  //     console.log(error);
+  //   });
 
   const client = new Client({
     brokerURL: "/ws/",
@@ -109,18 +116,48 @@ onMounted(() => {
     console.log("Connected to STOMP broker!");
 
     client.subscribe(
-      "/topic/quiz/" + route.params.lobby_id + "/finish_question",
+      "/topic/lobby/" + route.params.lobby_id + "/finish_question",
       function (message) {
         const data = JSON.parse(message.body);
+        console.log("noce results");
 
         if (data.type === "QUESTION_RESULTS") {
           console.log(data);
+          question_index.value += 1;
+          setQuestion();
         }
       }
     );
   };
   client.activate();
 });
+
+function setQuestion() {
+  question.value.text = current_questions.value[question_index.value].question;
+  question.value.category =
+    current_questions.value[question_index.value].category;
+  question.value.difficulty =
+    current_questions.value[question_index.value].difficulty;
+  question.value.answers =
+    current_questions.value[question_index.value].incorrect_answers;
+
+  if (current_questions.value[question_index.value].type == "multiple") {
+    const index = Math.floor(Math.random() * 3);
+    question.value.answers.splice(
+      index,
+      0,
+      current_questions.value[question_index.value].correct_answer
+    );
+    question.value.correct =
+      current_questions.value[question_index.value].correct_answer;
+    loaded.value = true;
+  } else {
+    question.value.answers = ["True", "False"];
+    question.value.correct =
+      current_questions.value[question_index.value].incorrect_answers[0];
+  }
+  console.log(question.value);
+}
 
 function selectAnswer(i) {
   if (question.value.correct === question.value.answers[i]) {

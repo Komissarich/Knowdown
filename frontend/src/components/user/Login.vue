@@ -1,7 +1,19 @@
 <template>
+  <v-dialog v-model="isActive" max-width="500" persistent>
+    <v-card title="Ошибка">
+      <v-card-text class="text-center py-6">
+        <v-icon icon="mdi-alert" color="error" size="64"></v-icon>
+        <p class="text-h6 mt-4">Ошибка входа: неправильный пароль или логин</p>
+      </v-card-text>
+
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn color="primary" @click="isActive = false"> Понял </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
   <div class="d-flex justify-center align-center" style="height: 60vh">
     <v-sheet width="350" height="450" :elevation="16">
-      <v-alert text="Couldn't login" v-model="logAlert" type="error"></v-alert>
       <v-form ref="form" fast-fail @submit.prevent="submit">
         <v-text-field
           class="mt-10 mx-auto"
@@ -57,6 +69,7 @@ const logAlert = ref(false);
 const loading = ref(false);
 const userName = ref("");
 const userPassword = ref("");
+const isActive = ref(false);
 const store = useUserStore();
 async function submit(event) {
   const { valid } = await form.value.validate();
@@ -66,11 +79,13 @@ async function submit(event) {
     const results = await event;
 
     try {
-      store.login(userName.value, userPassword.value);
+      await store.login(userName.value, userPassword.value);
       router.push("/");
       loading.value = false;
     } catch (error) {
       console.log(error);
+      isActive.value = true;
+      loading.value = false;
     }
   } else {
     logAlert.value = !logAlert.value;

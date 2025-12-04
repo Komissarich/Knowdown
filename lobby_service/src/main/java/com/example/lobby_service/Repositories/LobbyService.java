@@ -4,6 +4,7 @@ import com.example.lobby_service.Repositories.Entities.ChatMessage;
 import com.example.lobby_service.Repositories.Entities.Lobby;
 import com.example.lobby_service.Repositories.Entities.Player;
 import com.example.lobby_service.Repositories.Entities.QuestionResultMessage;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -16,16 +17,16 @@ import java.util.concurrent.ConcurrentMap;
 
 
 @Service
-
 public class LobbyService {
     private final Map<String, Lobby> lobbies;
-    private final SimpMessagingTemplate messagingTemplate;
-    public LobbyService(SimpMessagingTemplate messagingTemplate) {
-        this.messagingTemplate = messagingTemplate;
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+    public LobbyService() {
+
         lobbies = new ConcurrentHashMap<String, Lobby>();
     }
 
-    public String CreateLobby(boolean isPrivate, int maxPlayersCount, String name, Player creator) {
+    public String CreateLobby(boolean isPrivate, int maxPlayersCount, String name, String creator) {
         String lobbyId = UUID.randomUUID().toString().substring(0, 6);
         System.out.println("created lobby " + lobbyId);
 
@@ -43,7 +44,6 @@ public class LobbyService {
     }
 
     public void AddPlayerInLobby(String id, Player player) {
-
         lobbies.get(id).AddPlayer(player);
     }
 
@@ -57,17 +57,21 @@ public class LobbyService {
     }
 
     public boolean checkCreator(String lobbyId, String username) {
-        return lobbies.get(lobbyId).getCreator().username.equals(username);
+        return lobbies.get(lobbyId).getCreator().getUsername().equals(username);
     }
 
     public void AddAnswer(String name, String lobbyId, Long timestamp) {
         this.lobbies.get(lobbyId).AddAnswer(name, timestamp);
     }
 
-    public void finishQuestion(String lobbyId) {
-        messagingTemplate.convertAndSend("/topic/quiz/" + lobbyId + "finish_question",
-                new QuestionResultMessage("QUESTION_RESULTS", this.lobbies.get(lobbyId).finishQuestion())
-        );
+    public Map<String, Integer> sendResults(String lobbyId) {
+        System.out.println(lobbyId);
+//        System.out.println("Существует ли лобби? " + lobbies.containsKey(lobbyId));
+//        messagingTemplate.convertAndSend("/topic/lobby/" + lobbyId + "/finish_question",
+//                new QuestionResultMessage("QUESTION_RESULTS", this.lobbies.get(lobbyId).finishQuestion())
+//        );
+        return this.lobbies.get(lobbyId).finishQuestion();
+
     }
 }
 
