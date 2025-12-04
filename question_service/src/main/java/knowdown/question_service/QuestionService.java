@@ -9,6 +9,7 @@ import jakarta.transaction.Transactional;
 import knowdown.question_service.database.QuestionEntity;
 import knowdown.question_service.database.QuestionRepository;
 import knowdown.question_service.dto.QuestionResponse;
+import knowdown.question_service.dto.QuestionsRequest;
 import knowdown.question_service.questionApi.ApiQuestion;
 import knowdown.question_service.questionApi.QuestionApiResponse;
 import org.slf4j.Logger;
@@ -104,29 +105,44 @@ public class QuestionService {
         }
     }
 
-    public QuestionResponse getQuestionFromDatabase(
-            QuestionDifficulty difficulty,
-            QuestionType type,
-            QuestionCategory category
+    public List<QuestionResponse> getQuestionsFromDatabase(
+            QuestionsRequest request
     ) {
-        Optional<QuestionEntity> entity = repository.getQuestion(
-                type == null ? null : type.name(),
-                difficulty == null ? null : difficulty.name(),
-                category == null ? null : category.name()
+        List<String> questionTypes = new ArrayList<String>();
+        request.types().forEach(t -> questionTypes.add(t.name()));
+        List<String> questionDifficulties = new ArrayList<String>();
+        request.difficulties().forEach(d -> questionDifficulties.add(d.name()));
+        List<String> questionCategories = new ArrayList<String>();
+        request.categories().forEach(c -> questionCategories.add(c.name()));
+
+        List<QuestionEntity> questions = repository.getQuestions(
+                request.amount(),
+                questionTypes,
+                questionDifficulties,
+                questionCategories
         );
-        if (entity.isEmpty()) {
+
+        if (questions.isEmpty()) {
             throw new EntityNotFoundException("Question with given parameters not found");
         } else {
-            QuestionResponse response = new QuestionResponse(
-                    entity.get().getQuestion(),
-                    entity.get().getDifficulty(),
-                    entity.get().getType(),
-                    entity.get().getCategory(),
-                    entity.get().getCorrectAnswer(),
-                    entity.get().getIncorrectAnswers()
-            );
-            return response;
+            List<QuestionResponse> result = new ArrayList<QuestionResponse>();
+            questions.forEach(q -> {
+                result.add(
+                        new QuestionResponse(
+                                q.getQuestion(),
+                                q.getDifficulty(),
+                                q.getType(),
+                                q.getCategory(),
+                                q.getCorrectAnswer(),
+                                q.getIncorrectAnswers()
+                        )
+                );
+            });
+            return result;
         }
+
     }
+
+
 
 }
