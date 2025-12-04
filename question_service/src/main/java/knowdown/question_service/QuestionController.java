@@ -2,6 +2,7 @@ package knowdown.question_service;
 
 import knowdown.question_service.dto.QuestionResponse;
 import knowdown.question_service.dto.QuestionsRequest;
+import knowdown.question_service.dto.QuizResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +22,7 @@ public class QuestionController {
     }
 
     @PostMapping("/")
-    public ResponseEntity<List<QuestionResponse>> getQuestion(
+    public ResponseEntity<QuizResponse> getQuestion(
             @RequestBody QuestionsRequest request
     ) {
         if (
@@ -34,7 +35,8 @@ public class QuestionController {
         }
 
         try {
-            return ResponseEntity.ok(questionService.getQuestionsFromDatabase(request));
+            return ResponseEntity.ok(new QuizResponse(questionService.getQuestionsFromDatabase(request))
+            );
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
