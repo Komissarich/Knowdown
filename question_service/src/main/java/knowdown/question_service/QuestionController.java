@@ -20,7 +20,7 @@ public class QuestionController {
         this.questionService = questionService;
     }
 
-    @PostMapping("question")
+    @PostMapping("/")
     public ResponseEntity<List<QuestionResponse>> getQuestion(
             @RequestBody QuestionsRequest request
     ) {

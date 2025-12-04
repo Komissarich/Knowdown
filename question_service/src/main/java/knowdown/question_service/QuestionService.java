@@ -127,14 +127,21 @@ public class QuestionService {
         } else {
             List<QuestionResponse> result = new ArrayList<QuestionResponse>();
             questions.forEach(q -> {
+                String question = fixQuestionString(q.getQuestion());
+                String correct = fixQuestionString(q.getCorrectAnswer());
+                List<String> incorrect = new ArrayList<String>();
+                q.getIncorrectAnswers().forEach(a -> {
+                    incorrect.add(fixQuestionString(a));
+                });
+
                 result.add(
                         new QuestionResponse(
-                                q.getQuestion(),
+                                question,
                                 q.getDifficulty(),
                                 q.getType(),
                                 q.getCategory(),
-                                q.getCorrectAnswer(),
-                                q.getIncorrectAnswers()
+                                correct,
+                                incorrect
                         )
                 );
             });
@@ -143,6 +150,9 @@ public class QuestionService {
 
     }
 
-
-
+    String fixQuestionString(String str) {
+        String result = str.replace("&#039", "");
+        result = result.replace("&quot;", "'");
+        return result;
+    }
 }

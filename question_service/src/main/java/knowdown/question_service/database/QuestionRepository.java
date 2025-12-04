@@ -31,9 +31,9 @@ public interface QuestionRepository extends JpaRepository<QuestionEntity, Long> 
     @Query(value = """
         SELECT *
         FROM questions
-        WHERE (type = ANY(:questionTypes))
-        AND (difficulty = ANY(:questionDifficulties))
-        AND (category = ANY(:questionCategories))
+        WHERE (type IN (:questionTypes))
+        AND (difficulty IN (:questionDifficulties))
+        AND (category IN (:questionCategories))
         ORDER BY RANDOM()
         LIMIT :amount
     """, nativeQuery = true)
