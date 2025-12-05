@@ -139,17 +139,17 @@ function setQuestion() {
   question.value.difficulty =
     current_questions.value[question_index.value].difficulty;
   question.value.answers =
-    current_questions.value[question_index.value].incorrect_answers;
+    current_questions.value[question_index.value].incorrectAnswers;
 
-  if (current_questions.value[question_index.value].type == "multiple") {
+  if (current_questions.value[question_index.value].type == "MULTIPLE_CHOICE") {
     const index = Math.floor(Math.random() * 3);
     question.value.answers.splice(
       index,
       0,
-      current_questions.value[question_index.value].correct_answer
+      current_questions.value[question_index.value].correctAnswer
     );
     question.value.correct =
-      current_questions.value[question_index.value].correct_answer;
+      current_questions.value[question_index.value].correctAnswer;
     loaded.value = true;
   } else {
     question.value.answers = ["True", "False"];
