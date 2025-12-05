@@ -163,10 +163,12 @@ const chips = ref([
   "Films",
   "Movies",
   "Music",
+  "Theatres",
   "Television",
   "Video Games",
   "Board Games",
   "Science & Nature",
+  "Computers",
   "Mathematics",
   "Mythology",
   "Sports",
@@ -175,12 +177,32 @@ const chips = ref([
   "Politics",
   "Art",
   "Animals",
+  "Gadgets",
   "Celebrities",
   "Vehicles",
   "Celebrities",
   "Anime",
   "Cartoons",
 ]);
+
+const map = new Map();
+map.set("General Knowledge", "General Knowledge");
+map.set("Books", "Entertainment: Books");
+map.set("Films", "Entertainment: Film");
+map.set("Music", "Entertainment: Music");
+map.set("Theatres", "Musicals & Theatres");
+map.set("Television", "Entertainment: Television");
+map.set("Board Games", "Entertainment: Board Games");
+map.set("Video Games", "Entertainment: Video Games");
+map.set("Science", "Science: Computers");
+map.set("Computers", "Entertainment: Books");
+map.set("Mathematics", "Science: Mathematics");
+map.set("Mythology", "Mythology");
+map.set("Sports", "Sports");
+map.set("Gadgets", "Science: Gadgets");
+map.set("Anime", "Entertainment: Japanese Anime & Manga");
+map.set("Cartoons", "Entertainment: Cartoon & Animations");
+
 async function playGame() {
   console.log(route.params.lobby_id, userStore.username);
   console.log(chips.value);
@@ -204,12 +226,13 @@ async function playGame() {
         }).catch(function (error) {
           console.log(error);
         });
-
+        const categories = chips.value.map((cat) => map.get(cat) || cat);
+        console.log("cats", categories);
         axios({
           method: "post",
           url: "/api/lobby/" + route.params.lobby_id + "/get_questions",
           data: {
-            categories: chips.value,
+            categories: chips.value.map((cat) => map.get(cat) || cat),
             question_count: parseInt(questionCount.value),
           },
           params: {

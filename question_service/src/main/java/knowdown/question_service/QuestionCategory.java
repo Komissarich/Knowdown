@@ -2,11 +2,17 @@ package knowdown.question_service;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
+import java.util.stream.Stream;
+
 
 public enum QuestionCategory {
     GENERAL_KNOWLEDGE("General Knowledge"),
     BOOKS("Entertainment: Books"),
-    FILM("Entertainment: Film"),
+    MOVIES("Entertainment: Film"),
     MUSIC("Entertainment: Music"),
     THEATRES("Entertainment: Musicals &amp; Theatres"),
     TELEVISION("Entertainment: Television"),
@@ -49,8 +55,28 @@ public enum QuestionCategory {
         return map.get(name);
     }
 
+@JsonValue
+    public String getDisplayName() {
+        return name;
+    }
+    
+private static final Map<String, QuestionCategory> BY_DISPLAY_NAME = 
+        Stream.of(values())
+              .collect(Collectors.toUnmodifiableMap(
+                  QuestionCategory::getDisplayName,
+                  c -> c
+              ));
 
-
-
+    @JsonCreator
+    public static QuestionCategory fromDisplayName(String displayName) {
+        if (displayName == null) {
+            return null;
+        }
+        QuestionCategory category = BY_DISPLAY_NAME.get(displayName);
+        if (category == null) {
+            throw new IllegalArgumentException("Unknown category: " + displayName);
+        }
+        return category;
+    }
 
 }

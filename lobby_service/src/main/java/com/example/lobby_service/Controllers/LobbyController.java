@@ -14,7 +14,9 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +32,8 @@ public class LobbyController {
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+
+
     @MessageMapping("/{lobbyId}/send_message")
     @SendTo("/topic/lobby/{lobbyId}/messages")
     public String processChatMessages(@DestinationVariable String lobbyId, String message) throws JsonProcessingException {
@@ -104,141 +108,26 @@ public class LobbyController {
 
     @PostMapping("/{lobbyId}/get_questions")
     public String  getQuestions(@RequestBody QuestionRequest request, @RequestParam String lobbyId) throws JsonProcessingException {
+
+        ApiGetQuestions apiGetQuestions = new ApiGetQuestions();
+        apiGetQuestions.setAmount(request.getQuestion_count());
+        List<String> types = new ArrayList<String>();
+        apiGetQuestions.setTypes(List.of("TRUE_FALSE", "MULTIPLE_CHOICE"));
+        apiGetQuestions.setCategories(request.getCategories());
+        apiGetQuestions.setDifficulties(List.of("EASY", "MEDIUM"));
         RestClient restClient = RestClient.create();
         QuestionResponse response = restClient.post()
-                .uri("http://question_service:8082/api/questions/get_questions")
+                .uri(UriComponentsBuilder.fromHttpUrl("http://question-service:8083/api/questions/fuck")
+                        .build()
+                        .toUri())
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(request)
+                .body(apiGetQuestions)
                 .retrieve()
                 .body(QuestionResponse.class);
-    }
         System.out.println("try to get questions");
         System.out.println(request);
-
-    ObjectMapper objectMapper = new ObjectMapper();
-        System.out.println(lobbyId);
-    String s = """
-    { "quiz_questions":
-    [
-    {
-        "type": "multiple",
-            "difficulty": "medium",
-            "category": "Entertainment: Music",
-            "question": "Who had hits in the 70s with the songs &quot;Lonely Boy&quot; and &quot;Never Let Her Slip Away&quot;?",
-            "correct_answer": "Andrew Gold",
-            "incorrect_answers": [
-        "Elton John",
-                "Leo Sayer",
-                "Barry White "
-      ]
-    },
-    {
-        "type": "multiple",
-            "difficulty": "hard",
-            "category": "Science &amp; Nature",
-            "question": "What is the scientific name of the knee cap?",
-            "correct_answer": "Patella",
-            "incorrect_answers": [
-        "Femur",
-                "Foramen Magnum",
-                "Scapula"
-      ]
-    },
-    {
-        "type": "multiple",
-            "difficulty": "hard",
-            "category": "Entertainment: Music",
-            "question": "Which M83 album is the song &quot;Midnight City&quot; featured in?",
-            "correct_answer": "Hurry Up, We&#039;re Dreaming",
-            "incorrect_answers": [
-        "Saturdays = Youth",
-                "Before the Dawn Heals Us",
-                "Junk"
-      ]
-    },
-    {
-        "type": "multiple",
-            "difficulty": "medium",
-            "category": "Entertainment: Video Games",
-            "question": "How many classes are there in Team Fortress 2?",
-            "correct_answer": "9",
-            "incorrect_answers": [
-        "10",
-                "8",
-                "7"
-      ]
-    },
-    {
-        "type": "boolean",
-            "difficulty": "medium",
-            "category": "General Knowledge",
-            "question": "&quot;Buffalo buffalo Buffalo buffalo buffalo buffalo Buffalo buffalo.&quot; is a grammatically correct sentence.",
-            "correct_answer": "True",
-            "incorrect_answers": [
-        "False"
-      ]
-    },
-    {
-        "type": "multiple",
-            "difficulty": "medium",
-            "category": "Science: Computers",
-            "question": "What does the term GPU stand for?",
-            "correct_answer": "Graphics Processing Unit",
-            "incorrect_answers": [
-        "Gaming Processor Unit",
-                "Graphite Producing Unit",
-                "Graphical Proprietary Unit"
-      ]
-    },
-    {
-        "type": "boolean",
-            "difficulty": "easy",
-            "category": "General Knowledge",
-            "question": "In architecture, a &quot;pecklesteiner&quot; is a set of doors that overlap each other when closed, and can be locked through a single keyhole.",
-            "correct_answer": "False",
-            "incorrect_answers": [
-        "True"
-      ]
-    },
-    {
-        "type": "multiple",
-            "difficulty": "hard",
-            "category": "Sports",
-            "question": "Which English football team is nicknamed &#039;The Tigers&#039;?",
-            "correct_answer": "Hull City",
-            "incorrect_answers": [
-        "Cardiff City",
-                "Bristol City",
-                "Manchester City"
-      ]
-    },
-    {
-        "type": "multiple",
-            "difficulty": "easy",
-            "category": "Entertainment: Video Games",
-            "question": "What company developed the Xbox line of video game consoles?",
-            "correct_answer": "Microsoft",
-            "incorrect_answers": [
-        "Sony",
-                "Toshiba",
-                "IBM"
-      ]
-    },
-    {
-        "type": "multiple",
-            "difficulty": "easy",
-            "category": "General Knowledge",
-            "question": "Which one of the following rhythm games was made by Harmonix?",
-            "correct_answer": "Rock Band",
-            "incorrect_answers": [
-        "Meat Beat Mania",
-                "Guitar Hero Live",
-                "Dance Dance Revolution"
-      ]
-    }
-  ]
-  }""";
-        QuestionResponse response = objectMapper.readValue(s, QuestionResponse.class);
+        System.out.println("response");
+        System.out.println(response);
         messagingTemplate.convertAndSend(
                 "/topic/lobby/" + lobbyId + "/get_questions",
                 new QuestMessage(response)

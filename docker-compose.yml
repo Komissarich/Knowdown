@@ -80,7 +80,7 @@ services:
       start_period: 10s
     restart: unless-stopped
 
-  question_service:
+  question-service:
     build:
       context: ./question_service
       dockerfile: Dockerfile

@@ -12,4 +12,11 @@ public class QuestionResponse {
     public void setQuiz_questions(List<Question> quiz_questions) {
         this.quiz_questions = quiz_questions;
     }
+
+    @Override
+    public String toString() {
+        return "QuestionResponse{" +
+                "quiz_questions=" + quiz_questions +
+                '}';
+    }
 }

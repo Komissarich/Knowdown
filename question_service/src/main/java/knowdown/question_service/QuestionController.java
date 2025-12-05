@@ -21,7 +21,7 @@ public class QuestionController {
         this.questionService = questionService;
     }
 
-    @PostMapping("/")
+    @PostMapping("/fuck")
     public ResponseEntity<QuizResponse> getQuestion(
             @RequestBody QuestionsRequest request
     ) {
