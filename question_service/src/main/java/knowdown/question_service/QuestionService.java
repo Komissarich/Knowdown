@@ -151,8 +151,9 @@ public class QuestionService {
     }
 
     String fixQuestionString(String str) {
-        String result = str.replace("&#039", "");
-        result = result.replace("&quot;", "'");
+        String result = str.replace("&#039;", "'");
+        result = result.replace("&quot;", "\"");
+        result = result.replace("&divide;", "/");
         return result;
     }
 }
