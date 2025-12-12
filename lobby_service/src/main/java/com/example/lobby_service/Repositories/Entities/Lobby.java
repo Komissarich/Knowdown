@@ -56,6 +56,12 @@ public class Lobby {
 
         this.lobbyPlayers.remove (player);
     }
+    public Player FindPlayer(String username) {
+        return this.lobbyPlayers.stream()
+                .filter(player_ -> "James".equals(player_.getUsername()))
+                .findAny()
+                .orElse(null);
+    }
 
     public void AddMessage(ChatMessage chatMessage) {
 

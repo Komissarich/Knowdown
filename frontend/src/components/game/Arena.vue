@@ -9,7 +9,7 @@
         style="opacity: 0.8"
         width="100"
         height="100"
-        @click="Attack"
+        @click="attack"
         icon-size="100"
         rounded="circle"
         ><v-icon icon="mdi-sword" size="80"></v-icon
@@ -21,14 +21,71 @@
 <script setup lang="ts">
 import * as PIXI from "pixi.js";
 import nipplejs from "nipplejs";
-import { onMounted, onUnmounted, useTemplateRef } from "vue";
+import { onMounted, onUnmounted, ref, useTemplateRef } from "vue";
 import Arena from "./arena";
 import Player from "./player";
+import { routeLocationKey, useRoute } from "vue-router";
+import { Client } from "@stomp/stompjs";
+import { useUserStore } from "@/stores/user";
 const canvas = useTemplateRef<HTMLCanvasElement>("canvas");
 let app: PIXI.Application | null = null;
 let playerSprite: PIXI.AnimatedSprite;
 let joystick: any = null;
 let player: Player;
+const userStore = useUserStore();
+const myPlayerId = crypto.randomUUID();
+const myPlayerName = userStore.username;
+const players = ref<Map<string, Player>>(new Map());
+
+const route = useRoute();
+const client = new Client({
+  brokerURL: "/ws/",
+  debug: function (str) {
+    // console.log(str);
+  },
+  reconnectDelay: 5000,
+  heartbeatIncoming: 4000,
+  heartbeatOutgoing: 4000,
+});
+
+client.onStompError = function (frame) {
+  console.error("Broker reported error:", frame.headers["message"]);
+  console.error("Additional details:", frame.body);
+};
+client.onConnect = function (frame) {
+  console.log("Connected to STOMP broker!");
+
+  client.subscribe(
+    "/topic/arena/" + route.params.arena_id + "/positions",
+    (message) => {
+      const data = JSON.parse(message.body);
+      // console.log("data", data);
+      if (data.playerId !== myPlayerId) {
+        let remotePlayer = players.value.get(data.playerId);
+        if (!remotePlayer) {
+          remotePlayer = new Player();
+          remotePlayer.loadAnims().then((sprite) => {
+            app?.stage.addChild(sprite);
+          });
+          players.value.set(data.playerId, remotePlayer);
+          remotePlayer.playRun();
+        }
+
+        remotePlayer.x = data.x;
+        remotePlayer.y = data.y;
+        remotePlayer.direction = data.direction;
+        remotePlayer.updateSprite();
+      }
+    }
+  );
+};
+client.activate();
+
+onUnmounted(() => {
+  console.log("Client deactivated");
+  client.deactivate();
+});
+
 onMounted(async () => {
   if (!canvas.value) return;
   app = new PIXI.Application();
@@ -39,6 +96,7 @@ onMounted(async () => {
     backgroundColor: 0x1099bb,
     antialias: true,
   });
+  // createPlayer(myPlayerId, myPlayerName, true)
 
   const opponentSprite = new PIXI.Sprite(PIXI.Texture.WHITE);
   opponentSprite.width = 64;
@@ -166,16 +224,40 @@ onMounted(async () => {
         opponentSprite.tint = 0xffff00; // жёлтый
         setTimeout(() => (opponentSprite.tint = 0xff0000), 100);
 
-        // Урон (когда будет HP)
+        // Урон
         // opponent.hp -= player.damage
       }
     }
+    players.value.forEach((p) => {
+      if (Math.abs(p.vx) > 0.1 || Math.abs(p.vy) > 0.1) {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (Math.abs(p.vx) < 0.1) p.vx = 0;
+        if (Math.abs(p.vy) < 0.1) p.vy = 0;
+      }
+
+      p.updateSprite();
+    });
     if (player.movement.active) {
       player.move();
 
+      client.publish({
+        destination: "/app/arena/" + route.params.arena_id + "/move",
+        body: JSON.stringify({
+          playerId: myPlayerId,
+          playerName: myPlayerName,
+          x: player.x,
+          y: player.y,
+          direction: player.direction,
+        }),
+      });
       player.updateSprite();
       arena.constrainPlayer(player);
-
+      players.value.forEach((p, id) => {
+        if (id !== myPlayerId) {
+          p.updateSprite();
+        }
+      });
       // console.log(player.x, player.y, player.sprite.x, player.sprite.y);
     }
   });
@@ -208,8 +290,60 @@ onMounted(async () => {
     target.vy = knockY;
   }
 });
-function Attack() {
+
+function attack() {
   player.attack();
+
+  players.value.forEach((remotePlayer, id) => {
+    if (id === myPlayerId) return;
+
+    if (isInAttackRange(player, remotePlayer)) {
+      remotePlayer.sprite.tint = 0xff0000;
+      setTimeout(() => (remotePlayer.sprite.tint = 0xffffff), 200);
+
+      // applyKnockback(remotePlayer, player.direction, 20);
+    }
+  });
+}
+
+function isInAttackRange(attacker, target) {
+  const range = 90;
+  const dx = target.x - attacker.x;
+  const dy = target.y - attacker.y;
+  console.log(attacker, target, dx, dy);
+  switch (attacker.direction) {
+    case "up":
+      return dy < -10 && Math.abs(dx) < 20 && Math.abs(dy) < range;
+    case "down":
+      return dy > 10 && Math.abs(dx) < 20 && Math.abs(dy) < range;
+    case "left":
+      return dx < -10 && Math.abs(dy) < 20 && Math.abs(dx) < range;
+    case "right":
+      return dx > 10 && Math.abs(dy) < 20 && Math.abs(dx) < range;
+  }
+  return false;
+}
+
+function applyKnockback(target, direction, power = 20) {
+  target.vx = 0;
+  target.vy = 0;
+
+  switch (direction) {
+    case "up":
+      target.vy = -power;
+      break;
+    case "down":
+      target.vy = power;
+      break;
+    case "left":
+      target.vx = -power;
+      break;
+    case "right":
+      target.vx = power;
+      break;
+  }
+
+  target.knockbackFriction = 0.92;
 }
 
 onUnmounted(() => {

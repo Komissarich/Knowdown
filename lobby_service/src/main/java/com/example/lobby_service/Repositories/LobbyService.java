@@ -64,15 +64,45 @@ public class LobbyService {
         this.lobbies.get(lobbyId).AddAnswer(name, timestamp);
     }
 
-    public Map<String, Integer> sendResults(String lobbyId) {
+    public void sendResults(String lobbyId) {
         System.out.println(lobbyId);
-//        System.out.println("Существует ли лобби? " + lobbies.containsKey(lobbyId));
-//        messagingTemplate.convertAndSend("/topic/lobby/" + lobbyId + "/finish_question",
-//                new QuestionResultMessage("QUESTION_RESULTS", this.lobbies.get(lobbyId).finishQuestion())
-//        );
-        return this.lobbies.get(lobbyId).finishQuestion();
+        System.out.println("Существует ли лобби? " + lobbies.containsKey(lobbyId));
 
+        try {
+            messagingTemplate.convertAndSend("/topic/lobby/" + lobbyId + "/finish_question",
+                    new QuestionResultMessage("QUESTION_RESULTS", this.lobbies.get(lobbyId).finishQuestion())
+            );
+            System.out.println("Сообщение УСПЕШНО отправлено!");
+        } catch (Exception e) {
+            System.out.println("ОШИБКА ОТПРАВКИ: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
+
+//    public void updradePlayerStats(String lobbyId, String username, Map<String, Float> upgradedStats) {
+//        Lobby lobby = lobbies.get(lobbyId);
+//        if (lobby == null) throw new IllegalArgumentException("Lobby not found");
+//
+//        Player player = lobbies.get(lobbyId).FindPlayer(username);
+//        if (player == null) throw new IllegalArgumentException("Player not found");
+//
+//        upgradedStats.forEach((statName, points) -> {
+//            if (points == null || points <= 0) return; // пропускаем нулевые
+//            float valueToAdd = points * 10f; // ← настрой под свой баланс (10 за очко)
+//            switch (statName) {
+//                case "health" -> player.setHealth(player.getHealth() + valueToAdd);
+//                case "move_speed" -> player.setMoveSpeed(player.getMoveSpeed() + valueToAdd);
+//                case "attack_speed" -> player.setAttackSpeed(player.getAttackSpeed() + valueToAdd);
+//                case "melee_power" -> player.setMeleePower(player.getMeleePower() + valueToAdd);
+//                case "melee_range" -> player.setMeleeRange(player.getMeleeRange() + valueToAdd);
+//                case "knockback_power" -> player.setKnockbackPower(player.getKnockbackPower() + valueToAdd);
+//                case "vampirism" -> player.setVampirism(player.getVampirism() + valueToAdd / 10f); // например, меньше рост
+//                case "heal_rate" -> player.setHealRate(player.getHealRate() + valueToAdd);
+//                case "dodge_chance" -> player.setDodgeChance(player.getDodgeChance() + valueToAdd / 100f); // шанс в долях
+//                default -> log.warn("Неизвестный стат: {}", statName);
+//            }
+//        });
+//    }
 }
 
 

@@ -6,13 +6,15 @@ import attackImage from "./swordsman_attack.png";
 export default class Player {
   constructor() {
     this.x = 400;
+    this.vx = 0;
+    this.vy = 0;
     this.y = 300;
     this.direction = "down";
     this.speed = 1;
     this.movement = {
       x: 0,
       y: 0,
-      active: false,
+      active: true,
     };
     this.frameWidth = 64;
     this.frameHeight = 64;

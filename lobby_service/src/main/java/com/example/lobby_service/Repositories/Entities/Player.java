@@ -3,7 +3,7 @@ package com.example.lobby_service.Repositories.Entities;
 public class Player {
     private String username;
     //статы персонажа
-    private float heatlh;
+    private float health;
     private float move_speed;
     private float attack_speed;
     private float melee_power;
@@ -29,12 +29,12 @@ public class Player {
         this.username = username;
     }
 
-    public float getHeatlh() {
-        return heatlh;
+    public float getHealth() {
+        return health;
     }
 
-    public void setHeatlh(float heatlh) {
-        this.heatlh = heatlh;
+    public void setHealth(float health) {
+        this.health = health;
     }
 
     public float getMove_speed() {

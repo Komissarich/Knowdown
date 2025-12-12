@@ -14,11 +14,11 @@ public enum QuestionCategory {
     BOOKS("Entertainment: Books"),
     MOVIES("Entertainment: Film"),
     MUSIC("Entertainment: Music"),
-    THEATRES("Entertainment: Musicals &amp; Theatres"),
+    THEATRES("Entertainment: Musicals & Theatres"),
     TELEVISION("Entertainment: Television"),
     VIDEO_GAMES("Entertainment: Video Games"),
     BOARD_GAMES("Entertainment: Board Games"),
-    SCIENCE_NATURE("Science &amp; Nature"),
+    SCIENCE_NATURE("Science & Nature"),
     COMPUTERS("Science: Computers"),
     MATHEMATICS("Science: Mathematics"),
     MYTHOLOGY("Mythology"),
@@ -32,8 +32,8 @@ public enum QuestionCategory {
     VEHICLES("Vehicles"),
     COMICS("Entertainment: Comics"),
     GADGETS("Science: Gadgets"),
-    ANIME("Entertainment: Japanese Anime &amp; Manga"),
-    CARTOONS("Entertainment: Cartoon &amp; Animations");
+    ANIME("Entertainment: Japanese Anime & Manga"),
+    CARTOONS("Entertainment: Cartoon & Animations");
 
     private final String name;
     public String getName() {
