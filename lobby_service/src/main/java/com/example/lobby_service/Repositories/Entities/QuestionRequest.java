@@ -3,15 +3,15 @@ package com.example.lobby_service.Repositories.Entities;
 import java.util.List;
 
 public class QuestionRequest {
-    private int question_count;
+    private int amount;
     List<String> categories;
 
-    public int getQuestion_count() {
-        return question_count;
+    public int getAmount() {
+        return amount;
     }
 
-    public void setQuestion_count(int question_count) {
-        this.question_count = question_count;
+    public void setAmount(int amount) {
+        this.amount = amount;
     }
 
     public List<String> getCategories() {
@@ -25,7 +25,7 @@ public class QuestionRequest {
     @Override
     public String toString() {
         return "QuestionRequest{" +
-                "number_of_rounds=" + question_count +
+                "number_of_rounds=" + amount +
                 ", categories=" + categories +
                 '}';
     }

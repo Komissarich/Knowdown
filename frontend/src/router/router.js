@@ -27,7 +27,7 @@ const routes = [
   { path: "/auth/register", component: Register, meta: { requireAuth: false } },
   { path: "/auth/login", component: Login, meta: { requireAuth: false } },
   {
-    path: "/test_arena",
+    path: "/arena/:arena_id",
     component: Arena,
     meta: { requireAuth: false, showNavbar: false },
   },
@@ -66,6 +66,7 @@ router.beforeEach((to, from, next) => {
     next();
   } else {
     const store = useUserStore();
+
     if (to.meta.requireAuth == true && store.isLogged == false) {
       return next({ path: "/auth/login" });
     }

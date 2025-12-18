@@ -126,7 +126,7 @@ import router from "@/router/router.js";
 import { useLobbyStore } from "@/stores/lobby.js";
 
 const userStore = useUserStore();
-const questionCount = ref(20);
+const questionCount = ref(1);
 
 const players = ref([]);
 const route = useRoute();
@@ -135,7 +135,6 @@ const message = ref("");
 const items = [
   "General Knowledge",
   "Books",
-  "Films",
   "Movies",
   "Music",
   "Television",
@@ -160,7 +159,6 @@ const items = [
 const chips = ref([
   "General Knowledge",
   "Books",
-  "Films",
   "Movies",
   "Music",
   "Theatres",
@@ -188,24 +186,20 @@ const chips = ref([
 const map = new Map();
 map.set("General Knowledge", "General Knowledge");
 map.set("Books", "Entertainment: Books");
-map.set("Films", "Entertainment: Film");
+map.set("Movies", "Entertainment: Film");
 map.set("Music", "Entertainment: Music");
-map.set("Theatres", "Musicals & Theatres");
+map.set("Theatres", "Entertainment: Musicals & Theatres");
 map.set("Television", "Entertainment: Television");
 map.set("Board Games", "Entertainment: Board Games");
 map.set("Video Games", "Entertainment: Video Games");
-map.set("Science", "Science: Computers");
-map.set("Computers", "Entertainment: Books");
+map.set("Science & Nature", "Science & Nature");
+map.set("Computers", "Science: Computers");
 map.set("Mathematics", "Science: Mathematics");
-map.set("Mythology", "Mythology");
-map.set("Sports", "Sports");
 map.set("Gadgets", "Science: Gadgets");
 map.set("Anime", "Entertainment: Japanese Anime & Manga");
 map.set("Cartoons", "Entertainment: Cartoon & Animations");
 
 async function playGame() {
-  console.log(route.params.lobby_id, userStore.username);
-  console.log(chips.value);
   axios({
     method: "post",
     url: "/api/lobby/isCreator",
@@ -227,13 +221,13 @@ async function playGame() {
           console.log(error);
         });
         const categories = chips.value.map((cat) => map.get(cat) || cat);
-        console.log("cats", categories);
+        console.log("cats", categories, "amount", questionCount);
         axios({
           method: "post",
           url: "/api/lobby/" + route.params.lobby_id + "/get_questions",
           data: {
             categories: chips.value.map((cat) => map.get(cat) || cat),
-            question_count: parseInt(questionCount.value),
+            amount: parseInt(questionCount.value),
           },
           params: {
             lobbyId: route.params.lobby_id,
@@ -279,7 +273,6 @@ client.onConnect = function (frame) {
       var parsed_message = JSON.parse(message.body);
       chat.value +=
         parsed_message.author + ": " + parsed_message.message + "\n";
-      console.log();
     }
   );
 
@@ -324,8 +317,6 @@ onUnmounted(() => {
 });
 
 function sendChatMessage() {
-  console.log("try to send " + message.value);
-
   client.publish({
     destination: "/app/" + route.params.lobby_id + "/send_message",
     body: JSON.stringify({
@@ -336,7 +327,6 @@ function sendChatMessage() {
 }
 
 function updatePlayerList() {
-  console.log("new_player " + message.value);
   client.publish({
     destination: "/app/" + route.params.lobby_id + "/join",
     body: JSON.stringify({ username: userStore.username }),

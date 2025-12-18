@@ -19,7 +19,6 @@ class Arena {
 
   draw(graphics) {
     graphics.clear();
-
     graphics.beginFill(0x00ff00, 0.3);
     graphics.drawCircle(this.centerX, this.centerY, this.radius);
     graphics.endFill();

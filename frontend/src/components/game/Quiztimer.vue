@@ -1,9 +1,6 @@
-```vue
-<!-- src/components/QuizTimer.vue -->
 <template>
   <div class="quiz-timer">
     <svg viewBox="0 0 100 100" class="timer-svg">
-      <!-- Фоновый круг (серый, тонкий) -->
       <circle
         cx="50"
         cy="50"
@@ -13,7 +10,6 @@
         stroke-width="6"
       />
 
-      <!-- Прогресс-круг -->
       <circle
         cx="50"
         cy="50"
@@ -27,7 +23,6 @@
         class="progress-ring"
       />
 
-      <!-- Цифра по центру -->
       <text
         x="50"
         y="40"
@@ -43,11 +38,10 @@
 </template>
 
 <script setup>
-// ← тот же скрипт, без изменений
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 
 const props = defineProps({
-  duration: { type: Number, default: 15 },
+  duration: { type: Number, default: 20 },
   start: { type: Boolean, default: false },
 });
 const emit = defineEmits(["timeout"]);
@@ -89,24 +83,21 @@ onUnmounted(() => clearInterval(interval));
 </script>
 
 <style scoped>
-/* ТАЙМЕР НАД ВОПРОСОМ ПО ЦЕНТРУ, НЕ НАЛЕЗАЕТ! */
 .quiz-timer {
   position: fixed;
-  top: -100px; /* отступ от верха */
+  top: 50px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 9999;
-  width: 100px; /* маленький и аккуратный */
+  width: 100px;
   height: 100px;
-  pointer-events: none; /* не мешает кликам */
+  pointer-events: none;
 }
 
-/* Только прогресс-круг крутится */
 .progress-ring {
   transform: rotate(-90deg);
   transform-origin: center;
   transition: stroke-dashoffset 0.05s linear, stroke 0.3s ease;
-  /* УБРАЛИ ВСЮ ТЕНЬ! */
 }
 
 .timer-text {

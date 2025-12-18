@@ -50,13 +50,6 @@ const lobbyStore = useLobbyStore();
 const lobbyName = ref("");
 
 function createLobby() {
-  console.log(
-    maxPlayers.value[1],
-    lobbyName.value,
-    userStore.username,
-    isPrivate.value,
-    userStore.username
-  );
   axios({
     method: "post",
     url: "/api/lobby/create",
@@ -76,6 +69,7 @@ function createLobby() {
         maxPlayers.value[1],
         userStore.username
       );
+      localStorage.setItem("hostedLobby", response.data.lobbyId);
       router.push({ path: "/lobby/" + response.data.lobbyId });
     })
     .catch(function (error) {

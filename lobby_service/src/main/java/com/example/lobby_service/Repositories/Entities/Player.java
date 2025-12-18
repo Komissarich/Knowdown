@@ -2,8 +2,10 @@ package com.example.lobby_service.Repositories.Entities;
 
 public class Player {
     private String username;
+    private int x;
+    private int y;
     //статы персонажа
-    private float heatlh;
+    private float health;
     private float move_speed;
     private float attack_speed;
     private float melee_power;
@@ -13,6 +15,22 @@ public class Player {
     private float heal_rate;
     private float dodge_chance;
 
+
+    public int getX() {
+        return x;
+    }
+
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public void setY(int y) {
+        this.y = y;
+    }
 
     @Override
     public String toString() {
@@ -29,12 +47,12 @@ public class Player {
         this.username = username;
     }
 
-    public float getHeatlh() {
-        return heatlh;
+    public float getHealth() {
+        return health;
     }
 
-    public void setHeatlh(float heatlh) {
-        this.heatlh = heatlh;
+    public void setHealth(float health) {
+        this.health = health;
     }
 
     public float getMove_speed() {
