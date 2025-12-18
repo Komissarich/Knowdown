@@ -106,8 +106,22 @@ public class LobbyController {
         return "sent results";
     }
 
+    @PostMapping("/{lobbyId}/getPlayers")
+    public String getPlayers(@RequestParam String lobbyId, @RequestParam String username) {
+        System.out.println("getting players");
+
+        if (!lobbyService.checkCreator(lobbyId, username)) {
+            return "Только создатель может отправить этот запрос";
+        }
+        messagingTemplate.convertAndSend(
+                "/topic/arena/" + lobbyId + "/starting_positions",
+                lobbyService.getPlayers(lobbyId)
+        );
+        return "sent starting positions";
+    }
+
     @PostMapping("/{lobbyId}/get_questions")
-    public String  getQuestions(@RequestBody QuestionRequest request, @RequestParam String lobbyId) throws JsonProcessingException {
+    public String getQuestions(@RequestBody QuestionRequest request, @RequestParam String lobbyId) throws JsonProcessingException {
 
         ApiGetQuestions apiGetQuestions = new ApiGetQuestions();
         apiGetQuestions.setAmount(request.getAmount());
@@ -151,13 +165,50 @@ public class LobbyController {
 
     @MessageMapping("/arena/{arena_id}/move")
     public void playerMove(@DestinationVariable String arena_id,
-                           @RequestBody PlayerPosition position) {
-//        System.out.println("moving");
-//        System.out.println(position);
+                           @RequestParam PlayerPosition position) {
+//      System.out.println("moving");
+//      System.out.println(position);
 
         messagingTemplate.convertAndSend(
                 "/topic/arena/" + arena_id + "/positions",
                 position
+        );
+    }
+
+   @PostMapping("/arena/{arena_id}/stop")
+    public void playerStop(@RequestParam String arena_id,
+                           @RequestParam String username) {
+//       System.out.println("stoping");
+//      System.out.println(username);
+        messagingTemplate.convertAndSend(
+                "/topic/arena/" + arena_id + "/stop_anim",
+                username
+        );
+    }
+
+    @PostMapping("/arena/{arena_id}/attack")
+    public void playerAttack(@RequestParam String arena_id,
+                           @RequestParam String username) {
+//        System.out.println("attacking");
+//        System.out.println(username);
+
+        messagingTemplate.convertAndSend(
+                "/topic/arena/" + arena_id + "/attack_anim",
+                username
+        );
+    }
+
+    @PostMapping("/arena/{arena_id}/receive_attack")
+    public void receiveAttack(@RequestParam String arena_id, @RequestBody AttackResponse request) {
+
+        System.out.println("receiving attack");
+//        System.out.println("receiving attacking");
+//        System.out.println(username);
+
+        messagingTemplate.convertAndSend(
+                "/topic/arena/" + arena_id + "/receive_attack",
+               request
+
         );
     }
 

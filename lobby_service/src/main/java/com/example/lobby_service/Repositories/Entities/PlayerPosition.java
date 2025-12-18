@@ -4,7 +4,7 @@ public class PlayerPosition {
     private int x;
     private int y;
     private String playerName;
-    private String playerId;
+
     private String direction;
     public int getX() {
         return x;
@@ -30,14 +30,6 @@ public class PlayerPosition {
         this.playerName = playerName;
     }
 
-    public String getPlayerId() {
-        return playerId;
-    }
-
-    public void setPlayerId(String playerId) {
-        this.playerId = playerId;
-    }
-
     public String getDirection() {
         return direction;
     }
@@ -52,7 +44,6 @@ public class PlayerPosition {
                 "x=" + x +
                 ", y=" + y +
                 ", playerName='" + playerName + '\'' +
-                ", playerId='" + playerId + '\'' +
                 ", direction='" + direction + '\'' +
                 '}';
     }

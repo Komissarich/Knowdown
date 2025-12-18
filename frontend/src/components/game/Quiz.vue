@@ -1,7 +1,7 @@
 <template>
   <div class="quiz-screen">
     <Quiztimer
-      :duration="15"
+      :duration="3"
       :start="!!question"
       @timeout="onTimeOut"
       :key="timerKey"
@@ -339,7 +339,10 @@ function setQuestion() {
       .then(function (response) {
         console.log(response.data);
         localStorage.setItem("move_speed", stats.value[1].value * 2);
-        router.push("/arena/" + route.params.quiz_id);
+        router.push({
+          path: "/arena/" + route.params.quiz_id,
+          params: { arena_id: route.params.quiz_id },
+        });
       })
       .catch(function (error) {
         console.log(error);

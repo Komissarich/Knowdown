@@ -2,6 +2,8 @@ package com.example.lobby_service.Repositories.Entities;
 
 public class Player {
     private String username;
+    private int x;
+    private int y;
     //статы персонажа
     private float health;
     private float move_speed;
@@ -13,6 +15,22 @@ public class Player {
     private float heal_rate;
     private float dodge_chance;
 
+
+    public int getX() {
+        return x;
+    }
+
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public void setY(int y) {
+        this.y = y;
+    }
 
     @Override
     public String toString() {

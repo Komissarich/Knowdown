@@ -126,7 +126,7 @@ import router from "@/router/router.js";
 import { useLobbyStore } from "@/stores/lobby.js";
 
 const userStore = useUserStore();
-const questionCount = ref(2);
+const questionCount = ref(1);
 
 const players = ref([]);
 const route = useRoute();

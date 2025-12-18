@@ -8,10 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -79,6 +76,16 @@ public class LobbyService {
         }
     }
 
+
+    public List<Player> getPlayers(String lobbyId) {
+        List<Player> players = this.lobbies.get(lobbyId).getLobbyPlayers();
+        Random rand = new Random();
+        for (Player player : players ) {
+            player.setX(rand.nextInt((600 - 200) + 1) + 200);
+            player.setY(rand.nextInt((400 - 200) + 1) + 200);
+        }
+        return players;
+    }
 //    public void updradePlayerStats(String lobbyId, String username, Map<String, Float> upgradedStats) {
 //        Lobby lobby = lobbies.get(lobbyId);
 //        if (lobby == null) throw new IllegalArgumentException("Lobby not found");

@@ -27,16 +27,17 @@ import Player from "./player";
 import { routeLocationKey, useRoute } from "vue-router";
 import { Client } from "@stomp/stompjs";
 import { useUserStore } from "@/stores/user";
+import axios from "axios";
+import { consoleError } from "vuetify/lib/util/console.mjs";
 const canvas = useTemplateRef<HTMLCanvasElement>("canvas");
 let app: PIXI.Application | null = null;
-let playerSprite: PIXI.AnimatedSprite;
 let joystick: any = null;
 let player: Player;
 const userStore = useUserStore();
-const myPlayerId = crypto.randomUUID();
 const myPlayerName = userStore.username;
 const players = ref<Map<string, Player>>(new Map());
-
+const players_start = ref([]);
+let doneSetup = false;
 const route = useRoute();
 const client = new Client({
   brokerURL: "/ws/",
@@ -59,22 +60,69 @@ client.onConnect = function (frame) {
     "/topic/arena/" + route.params.arena_id + "/positions",
     (message) => {
       const data = JSON.parse(message.body);
-      // console.log("data", data);
-      if (data.playerId !== myPlayerId) {
-        let remotePlayer = players.value.get(data.playerId);
-        if (!remotePlayer) {
-          remotePlayer = new Player();
-          remotePlayer.loadAnims().then((sprite) => {
-            app?.stage.addChild(sprite);
-          });
-          players.value.set(data.playerId, remotePlayer);
-          remotePlayer.playRun();
-        }
-
-        remotePlayer.x = data.x;
-        remotePlayer.y = data.y;
-        remotePlayer.direction = data.direction;
+      // console.log("data", data, myPlayerName);
+      if (data.playerName !== myPlayerName) {
+        let remotePlayer = players.value.get(data.playerName);
+        // console.log("Changing animation of another player");
+        remotePlayer.changeMovement(data.x, data.y, true, data.direction, 0, 0);
+        remotePlayer.animationSpeed = 0.1;
         remotePlayer.updateSprite();
+      }
+    }
+  );
+
+  client.subscribe(
+    "/topic/arena/" + route.params.arena_id + "/starting_positions",
+    async (message) => {
+      const data = JSON.parse(message.body);
+      console.log("Get starting positions: ", data);
+      players_start.value = data;
+      await createPlayers();
+    }
+  );
+
+  client.subscribe(
+    "/topic/arena/" + route.params.arena_id + "/stop_anim",
+    (message) => {
+      const data = message.body;
+
+      if (data !== myPlayerName) {
+        let remotePlayer = players.value.get(data);
+        remotePlayer.changeMovement(0, 0, false, 0, 0);
+        remotePlayer.lastDirection = null;
+        remotePlayer.animationSpeed = 0.05;
+        remotePlayer.stop();
+      }
+    }
+  );
+
+  client.subscribe(
+    "/topic/arena/" + route.params.arena_id + "/attack_anim",
+    (message) => {
+      const data = message.body;
+      if (data !== myPlayerName) {
+        let remotePlayer = players.value.get(data);
+        remotePlayer.animationSpeed = 0.1;
+        remotePlayer.attack();
+      }
+    }
+  );
+
+  client.subscribe(
+    "/topic/arena/" + route.params.arena_id + "/receive_attack",
+    (message) => {
+      const data = JSON.parse(message.body);
+      if (data !== myPlayerName) {
+        let remotePlayer = players.value.get(data.target_username);
+        remotePlayer.sprite.tint = 0xff0000;
+        remotePlayer.hp -= data.damage;
+        setTimeout(() => (remotePlayer.sprite.tint = 0xffffff), 200);
+        remotePlayer.isKnocked = true;
+        applyKnockback(
+          remotePlayer,
+          data.knockback_direction,
+          data.knockback_power
+        );
       }
     }
   );
@@ -84,7 +132,110 @@ client.activate();
 onUnmounted(() => {
   console.log("Client deactivated");
   client.deactivate();
+  if (app) {
+    app.destroy(true);
+    app = null;
+  }
+  if (joystick) {
+    joystick.destroy();
+    joystick = null;
+  }
 });
+
+async function createPlayers() {
+  for (let i = 0; i < players_start.value.length; i++) {
+    if (players_start.value[i].username != myPlayerName) {
+      let currentPlayer = new Player(
+        players_start.value[i].x,
+        players_start.value[i].y,
+        0,
+        0,
+        players_start.value[i].username,
+        "down",
+        1,
+        100
+      );
+      console.log("Created Player", currentPlayer);
+      let sprite = await currentPlayer.loadAnims();
+      console.log("Player sprite", sprite);
+      app.stage.addChild(sprite);
+      currentPlayer.updateSprite();
+      client.publish({
+        destination: "/app/arena/" + route.params.arena_id + "/move",
+        body: JSON.stringify({
+          playerName: currentPlayer.name,
+          x: currentPlayer.x,
+          y: currentPlayer.y,
+          direction: "down",
+        }),
+      });
+
+      let nameText = await currentPlayer.loadName();
+      app.stage.addChild(nameText);
+
+      let hpBarBg = await currentPlayer.loadHpBarBg();
+      app.stage.addChild(hpBarBg);
+
+      let hpBar = await currentPlayer.loadHpBar();
+      app.stage.addChild(hpBar);
+
+      players.value.set(players_start.value[i].username, currentPlayer);
+    } else {
+      player = new Player(
+        players_start.value[i].x,
+        players_start.value[i].y,
+        0,
+        0,
+        myPlayerName,
+        "down",
+        1,
+        100
+      );
+
+      const sprite = await player.loadAnims();
+      app.stage.addChild(sprite);
+      player.updateSprite();
+      players.value.set(myPlayerName, player);
+
+      let nameText = await player.loadName();
+      app.stage.addChild(nameText);
+
+      let hpBarBg = await player.loadHpBarBg();
+      app.stage.addChild(hpBarBg);
+
+      let hpBar = await player.loadHpBar();
+      app.stage.addChild(hpBar);
+    }
+  }
+
+  console.log("All players: ", players);
+  doneSetup = true;
+}
+
+function applyKnockback(target, attackerDirection, power) {
+  console.log("starting knockback", target, attackerDirection, power);
+  let knockX = 0;
+  let knockY = 0;
+
+  switch (attackerDirection) {
+    case "up":
+      knockY = -power;
+      break;
+    case "down":
+      knockY = power;
+      break;
+    case "left":
+      knockX = -power;
+      break;
+    case "right":
+      knockX = power;
+      break;
+  }
+
+  target.vx = knockX;
+  target.vy = knockY;
+  console.log("Knock power: ", knockX, knockY);
+}
 
 onMounted(async () => {
   if (!canvas.value) return;
@@ -96,23 +247,24 @@ onMounted(async () => {
     backgroundColor: 0x1099bb,
     antialias: true,
   });
-  // createPlayer(myPlayerId, myPlayerName, true)
 
-  const opponentSprite = new PIXI.Sprite(PIXI.Texture.WHITE);
-  opponentSprite.width = 64;
-  opponentSprite.height = 64;
-  opponentSprite.tint = 0xff0000;
-  opponentSprite.x = 500;
-  opponentSprite.y = 250;
-  app.stage.addChild(opponentSprite);
-  let opponent = {
-    sprite: opponentSprite,
-    x: 500,
-    y: 300,
-    vx: 0, // скорость отталкивания по X
-    vy: 0, // по Y
-    knockbackFriction: 0.92, // чем меньше — тем дольше летит (0.9–0.95)
-  };
+  if (localStorage.getItem("hostedLobby") === route.params.arena_id) {
+    await axios({
+      method: "post",
+      url: "/api/lobby/" + route.params.arena_id + "/getPlayers",
+      params: {
+        lobbyId: route.params.arena_id,
+        username: myPlayerName,
+      },
+    })
+      .then(function (response) {
+        console.log(response.data);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
+
   const visualizeHitbox = new PIXI.Sprite(PIXI.Texture.WHITE);
 
   visualizeHitbox.width = 40;
@@ -125,10 +277,6 @@ onMounted(async () => {
   const arenaGraphics = new PIXI.Graphics();
   arena.draw(arenaGraphics);
   app.stage.addChild(arenaGraphics);
-  player = new Player();
-
-  const sprite = await player.loadAnims();
-  app.stage.addChild(sprite);
   const zone = document.getElementById("joystick-zone");
   if (zone) {
     joystick = nipplejs.create({
@@ -147,45 +295,77 @@ onMounted(async () => {
       const vx = data.vector.x;
       const vy = data.vector.y;
       const angle = data.angle.radian;
-
       player.changeMovement(
         Math.cos(angle) * 1.0,
         Math.sin(angle) * 1.0,
         true,
+        null,
         vx,
         vy
       );
+      player.animationSpeed = 0.2;
     });
 
-    joystick.on("end", () => {
+    joystick.on("end", async () => {
       player.changeMovement(0, 0, false, 0, 0);
       player.lastDirection = null;
       player.stop();
+      player.animationSpeed = 0.05;
+      await axios({
+        method: "post",
+        url: "/api/lobby/arena/" + route.params.arena_id + "/stop",
+        params: {
+          arena_id: route.params.arena_id,
+          username: myPlayerName,
+        },
+      })
+        .then(function (response) {
+          console.log(response.data);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
     });
   }
 
   app.ticker.add(() => {
-    if (Math.abs(opponent.vx) > 0.1 || Math.abs(opponent.vy) > 0.1) {
-      opponent.x += opponent.vx;
-      opponent.y += opponent.vy;
+    players.value.forEach((p) => {
+      const hpPercent = p.hp / p.maxHp;
+      p.hpBarBg.clear();
+      p.hpBarBg.rect(p.sprite.x - 30, p.sprite.y + 15, 60, 6);
+      p.hpBarBg.fill(0x333333);
 
-      // Затухание (трение)
-      opponent.vx *= opponent.knockbackFriction;
-      opponent.vy *= opponent.knockbackFriction;
+      p.hpBar.clear();
+      p.hpBar.rect(p.sprite.x - 30, p.sprite.y + 15, 60 * hpPercent, 6);
+      p.hpBar.fill(
+        hpPercent > 0.5 ? 0x00ff00 : hpPercent > 0.2 ? 0xffaa00 : 0xff0000
+      );
 
-      // Останавливаем полностью, если слишком медленно
-      if (Math.abs(opponent.vx) < 0.1) opponent.vx = 0;
-      if (Math.abs(opponent.vy) < 0.1) opponent.vy = 0;
-    }
+      p.textName.x = p.sprite.x - 25;
+      p.textName.y = p.sprite.y - 30;
 
-    // Синхронизация спрайта
-    opponent.sprite.x = opponent.x;
-    opponent.sprite.y = opponent.y;
+      if (p.isKnocked) {
+        if (Math.abs(p.vx) > 0.1 || Math.abs(p.vy) > 0.1) {
+          p.x += p.vx;
+          p.y += p.vy;
 
-    if (player.hitbox && player.isAttacking) {
-      // Позиционируем hitbox перед игроком
-      console.log("here");
+          p.vx *= p.knockback_friction;
+          p.vy *= p.knockback_friction;
+          if (Math.abs(p.vx) < 0.1) {
+            p.vx = 0;
+          }
 
+          if (Math.abs(p.vy) < 0.1) {
+            p.vy = 0;
+          }
+
+          if (Math.abs(p.vx) < 0.1 && Math.abs(p.vy) < 0.1) {
+            p.isKnocked = false;
+          }
+        }
+      }
+    });
+    if (player && player.hitbox && player.isAttacking) {
       const hitboxBounds = new PIXI.Rectangle();
       switch (player.direction) {
         case "up":
@@ -203,30 +383,6 @@ onMounted(async () => {
       }
       visualizeHitbox.x = hitboxBounds.x;
       visualizeHitbox.y = hitboxBounds.y;
-      const opponentRect = new PIXI.Rectangle(
-        opponentSprite.getBounds().x,
-        opponentSprite.getBounds().y,
-        opponentSprite.getBounds().width,
-        opponentSprite.getBounds().height
-      );
-
-      hitboxBounds.intersects(opponentRect);
-      // Проверяем пересечение
-      if (hitboxBounds.intersects(opponentRect)) {
-        console.log("HIT! Урон:", player.damage);
-
-        // Отдача оппонента
-        opponentSprite.x += 20;
-        opponentSprite.y += 10;
-
-        // Вспышка
-        applyKnockback(opponent, player.direction, 14);
-        opponentSprite.tint = 0xffff00; // жёлтый
-        setTimeout(() => (opponentSprite.tint = 0xff0000), 100);
-
-        // Урон
-        // opponent.hp -= player.damage
-      }
     }
     players.value.forEach((p) => {
       if (Math.abs(p.vx) > 0.1 || Math.abs(p.vy) > 0.1) {
@@ -238,13 +394,12 @@ onMounted(async () => {
 
       p.updateSprite();
     });
-    if (player.movement.active) {
+    if (player && player.movement.active) {
       player.move();
 
       client.publish({
         destination: "/app/arena/" + route.params.arena_id + "/move",
         body: JSON.stringify({
-          playerId: myPlayerId,
           playerName: myPlayerName,
           x: player.x,
           y: player.y,
@@ -253,55 +408,56 @@ onMounted(async () => {
       });
       player.updateSprite();
       arena.constrainPlayer(player);
-      players.value.forEach((p, id) => {
-        if (id !== myPlayerId) {
+      players.value.forEach((p, name) => {
+        if (name !== myPlayerName) {
           p.updateSprite();
         }
       });
       // console.log(player.x, player.y, player.sprite.x, player.sprite.y);
     }
   });
-  function applyKnockback(target, attackerDirection, power = 12) {
-    let knockX = 0;
-    let knockY = 0;
-
-    switch (attackerDirection) {
-      case "up":
-        knockY = -power;
-        break;
-      case "down":
-        knockY = power;
-        break;
-      case "left":
-        knockX = -power;
-        break;
-      case "right":
-        knockX = power;
-        break;
-    }
-
-    // Диагональ — чуть слабее, чтобы не улетал в космос
-    if (knockX !== 0 && knockY !== 0) {
-      knockX *= 0.3;
-      knockY *= 0.3;
-    }
-
-    target.vx = knockX;
-    target.vy = knockY;
-  }
 });
-
-function attack() {
+async function attack() {
+  player.animationSpeed = 0.2;
   player.attack();
 
-  players.value.forEach((remotePlayer, id) => {
-    if (id === myPlayerId) return;
+  await axios({
+    method: "post",
+    url: "/api/lobby/arena/" + route.params.arena_id + "/attack",
+    params: {
+      arena_id: route.params.arena_id,
+      username: myPlayerName,
+    },
+  })
+    .then(function (response) {
+      console.log(response.data);
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
 
+  players.value.forEach(async (remotePlayer, name) => {
+    if (name === myPlayerName) return;
     if (isInAttackRange(player, remotePlayer)) {
-      remotePlayer.sprite.tint = 0xff0000;
-      setTimeout(() => (remotePlayer.sprite.tint = 0xffffff), 200);
-
-      // applyKnockback(remotePlayer, player.direction, 20);
+      await axios({
+        method: "post",
+        url: "/api/lobby/arena/" + route.params.arena_id + "/receive_attack",
+        data: {
+          target_username: remotePlayer.name,
+          knockback_direction: player.direction,
+          knockback_power: player.knockback_power,
+          damage: player.damage,
+        },
+        params: {
+          arena_id: route.params.arena_id,
+        },
+      })
+        .then(function (response) {
+          console.log(response.data);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
     }
   });
 }
@@ -323,39 +479,6 @@ function isInAttackRange(attacker, target) {
   }
   return false;
 }
-
-function applyKnockback(target, direction, power = 20) {
-  target.vx = 0;
-  target.vy = 0;
-
-  switch (direction) {
-    case "up":
-      target.vy = -power;
-      break;
-    case "down":
-      target.vy = power;
-      break;
-    case "left":
-      target.vx = -power;
-      break;
-    case "right":
-      target.vx = power;
-      break;
-  }
-
-  target.knockbackFriction = 0.92;
-}
-
-onUnmounted(() => {
-  if (app) {
-    app.destroy(true);
-    app = null;
-  }
-  if (joystick) {
-    joystick.destroy();
-    joystick = null;
-  }
-});
 </script>
 
 <style scoped>
