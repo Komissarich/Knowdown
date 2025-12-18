@@ -87,16 +87,17 @@ client.onConnect = function (frame) {
     }
   );
 
-  client.subscribe(
-    "/topic/arena/" + route.params.arena_id + "/starting_positions",
-    async (message) => {
-      const data = JSON.parse(message.body);
-      console.log("Get starting positions: ", data);
-      players_start.value = data;
-      await createPlayers();
-    }
-  );
-
+  setTimeout(() => {
+    client.subscribe(
+      "/topic/arena/" + route.params.arena_id + "/starting_positions",
+      async (message) => {
+        const data = JSON.parse(message.body);
+        console.log("Get starting positions: ", data);
+        players_start.value = data;
+        await createPlayers();
+      }
+    );
+  }, 200);
   client.subscribe(
     "/topic/arena/" + route.params.arena_id + "/stop_anim",
     (message) => {
