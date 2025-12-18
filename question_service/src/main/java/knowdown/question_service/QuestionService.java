@@ -154,6 +154,8 @@ public class QuestionService {
         String result = str.replace("&#039;", "'");
         result = result.replace("&quot;", "\"");
         result = result.replace("&divide;", "/");
+        result = result.replace("&amp;", "&");
+
         return result;
     }
 }
