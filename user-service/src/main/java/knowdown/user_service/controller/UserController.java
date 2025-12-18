@@ -1,6 +1,7 @@
 package knowdown.user_service.controller;
 
 import knowdown.user_service.dto.LoginRequest;
+import knowdown.user_service.dto.RegisterRequest;
 import knowdown.user_service.dto.AuthResponse;
 import knowdown.user_service.service.UserService;
 import org.slf4j.Logger;
@@ -21,80 +22,89 @@ public class UserController {
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
         log.info("Вызов метода login для пользователя: {}", request.getUsername());
 
-        //проверяем, что username и password не пустые
-        if (request.getUsername() == null || request.getUsername().trim().isEmpty()) {
-            log.warn("Попытка входа с пустым именем пользователя");
-            AuthResponse response = new AuthResponse(null, "Имя пользователя не может быть пустым", false);
-            return ResponseEntity.badRequest().body(response);
+        //проверяем, что username и email не пустые
+        if ((request.getUsername() == null || request.getUsername().trim().isEmpty()) &&
+                (request.getEmail() == null || request.getEmail().trim().isEmpty())) {
+            log.warn("Попытка входа без имени пользователя и email");
+            return ResponseEntity.badRequest().body(new AuthResponse(null, false));
         }
 
         if (request.getPassword() == null || request.getPassword().trim().isEmpty()) {
-            log.warn("Попытка входа с пустым паролем для пользователя: {}", request.getUsername());
-            AuthResponse response = new AuthResponse(null, "Пароль не может быть пустым", false);
-            return ResponseEntity.badRequest().body(response);
+            log.warn("Попытка входа с пустым паролем");
+            return ResponseEntity.badRequest().body(new AuthResponse(null, false));
         }
 
         try {
-            //путентифицируем пользователя и получаем JWT токен
-            String token = userService.authenticateAndGetToken(request.getUsername(), request.getPassword());
+            String usernameOrEmail = request.getUsername() != null ?
+                    request.getUsername().trim() :
+                    request.getEmail().trim();
+            String token = userService.authenticateAndGetToken(usernameOrEmail, request.getPassword());
 
             if (token != null) {
-                log.info("Пользователь {} успешно аутентифицирован", request.getUsername());
-                AuthResponse response = new AuthResponse(token, "Вход выполнен успешно", true);
-                return ResponseEntity.ok(response);
+                log.info("Пользователь {} успешно аутентифицирован", usernameOrEmail);
+                return ResponseEntity.ok(new AuthResponse(token, true));
             } else {
-                log.warn("Ошибка аутентификации для пользователя: {}", request.getUsername());
-                AuthResponse response = new AuthResponse(null, "Неверное имя пользователя или пароль", false);
-                return ResponseEntity.badRequest().body(response);
+                log.warn("Ошибка аутентификации для: {}", usernameOrEmail);
+                return ResponseEntity.badRequest().body(new AuthResponse(null, false));
             }
         } catch (Exception e) {
-            log.error("Ошибка при входе для пользователя {}: {}", request.getUsername(), e.getMessage());
-            AuthResponse response = new AuthResponse(null, "Внутренняя ошибка сервера", false);
-            return ResponseEntity.internalServerError().body(response);
+            log.error("Ошибка при входе: {}", e.getMessage());
+            return ResponseEntity.internalServerError().body(new AuthResponse(null, false));
         }
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody LoginRequest request) {
-        log.info("Вызов метода register для пользователя: {}", request.getUsername());
+    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
+        log.info("Вызов метода register для пользователя: {}, email: {}",
+                request.getUsername(), request.getEmail());
 
-        //проверяем входные данные
+        //входные данные
         if (request.getUsername() == null || request.getUsername().trim().isEmpty()) {
             log.warn("Попытка регистрации с пустым именем пользователя");
-            AuthResponse response = new AuthResponse(null, "Имя пользователя не может быть пустым", false);
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.badRequest().body(new AuthResponse(null, false));
+        }
+
+        if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
+            log.warn("Попытка регистрации с пустым email");
+            return ResponseEntity.badRequest().body(new AuthResponse(null, false));
         }
 
         if (request.getPassword() == null || request.getPassword().trim().isEmpty()) {
-            log.warn("Попытка регистрации с пустым паролем для пользователя: {}", request.getUsername());
-            AuthResponse response = new AuthResponse(null, "Пароль не может быть пустым", false);
-            return ResponseEntity.badRequest().body(response);
+            log.warn("Попытка регистрации с пустым паролем");
+            return ResponseEntity.badRequest().body(new AuthResponse(null, false));
         }
 
-        //проверяем минимальную длину пароля
+        //минимальную длину пароля
         if (request.getPassword().length() < 6) {
-            log.warn("Попытка регистрации с слишком коротким паролем для пользователя: {}", request.getUsername());
-            AuthResponse response = new AuthResponse(null, "Пароль должен содержать не менее 6 символов", false);
-            return ResponseEntity.badRequest().body(response);
+            log.warn("Попытка регистрации с слишком коротким паролем");
+            return ResponseEntity.badRequest().body(new AuthResponse(null, false));
+        }
+
+        //валидация email
+        if (!isValidEmail(request.getEmail())) {
+            log.warn("Некорректный email: {}", request.getEmail());
+            return ResponseEntity.badRequest().body(new AuthResponse(null, false));
         }
 
         try {
-            boolean isRegistered = userService.registerUser(request.getUsername(), request.getPassword());
+            boolean isRegistered = userService.registerUser(
+                    request.getUsername().trim(),
+                    request.getEmail().trim(),
+                    request.getPassword()
+            );
 
             if (isRegistered) {
                 log.info("Пользователь {} успешно зарегистрирован", request.getUsername());
+                //входим после регистрации
                 String token = userService.authenticateAndGetToken(request.getUsername(), request.getPassword());
-                AuthResponse response = new AuthResponse(token, "Registration successful", true);
-                return ResponseEntity.ok(response);
+                return ResponseEntity.ok(new AuthResponse(token, true));
             } else {
-                log.warn("Ошибка регистрации - имя пользователя уже занято: {}", request.getUsername());
-                AuthResponse response = new AuthResponse(null, "Имя пользователя уже занято", false);
-                return ResponseEntity.badRequest().body(response);
+                log.warn("Ошибка регистрации - имя пользователя или email уже заняты");
+                return ResponseEntity.badRequest().body(new AuthResponse(null, false));
             }
         } catch (Exception e) {
-            log.error("Ошибка при регистрации пользователя {}: {}", request.getUsername(), e.getMessage());
-            AuthResponse response = new AuthResponse(null, "Внутренняя ошибка сервера при регистрации", false);
-            return ResponseEntity.internalServerError().body(response);
+            log.error("Ошибка при регистрации пользователя: {}", e.getMessage());
+            return ResponseEntity.internalServerError().body(new AuthResponse(null, false));
         }
     }
 
@@ -102,5 +112,9 @@ public class UserController {
     public ResponseEntity<String> healthCheck() {
         log.info("Работает ли сервис");
         return ResponseEntity.ok("сервис запущен");
+    }
+
+    private boolean isValidEmail(String email) {
+        return email != null && email.contains("@") && email.contains(".");
     }
 }

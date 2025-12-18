@@ -26,30 +26,37 @@ public class UserServiceImpl implements UserService {
     private JwtService jwtService;
 
     @Override
-    public boolean registerUser(String username, String password) {
-        //существует ли пользователь
-        Optional<User> existingUser = userRepository.findByUsername(username);
-        if (existingUser.isPresent()) {
-            return false; //уже существует
+    public boolean registerUser(String username, String email, String password) {
+        //существует ли пользователь с таким username или email
+        if (existsByUsername(username)) {
+            return false; //username уже занят
         }
 
-        User newUser = new User(username, passwordEncoder.encode(password));
+        if (existsByEmail(email)) {
+            return false; //email уже занят
+        }
+
+        User newUser = new User(username, email, passwordEncoder.encode(password));
         userRepository.save(newUser);
         return true;
     }
 
-//    @Override
-//    public boolean loginUser(String username, String password) {
-//        //поиск пользователя в базе данных
-//        Optional<User> user = userRepository.findByUsername(username);
-//        //проверяем совпадает ли пароль с его хэшем
-//        return user.isPresent() && passwordEncoder.matches(password, user.get().getPassword());
-//    }
+    @Override
+    public boolean existsByUsername(String username) {
+        return userRepository.findByUsername(username).isPresent();
+    }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return userRepository.findByEmail(email).isPresent();
+    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        //найти по username, затем по email
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("пользователь не найден" + username));
+                .orElseGet(() -> userRepository.findByEmail(username)
+                        .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден: " + username)));
 
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getUsername())
@@ -59,11 +66,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String authenticateAndGetToken(String username, String password) {
-        Optional<User> user = userRepository.findByUsername(username);
+    public String authenticateAndGetToken(String usernameOrEmail, String password) {
+        //найти пользователя по username или email
+        Optional<User> user = userRepository.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail);
 
         if (user.isPresent() && passwordEncoder.matches(password, user.get().getPassword())) {
-            UserDetails userDetails = loadUserByUsername(username);
+            UserDetails userDetails = loadUserByUsername(user.get().getUsername());
             return jwtService.generateToken(userDetails);
         }
         return null;
