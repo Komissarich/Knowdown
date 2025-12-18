@@ -339,6 +339,7 @@ function setQuestion() {
       );
     }
     console.log("RIGHT ANSWER INDEX", correctAnswerIndex.value);
+    console.log("QUESTION", question);
   } else {
     axios({
       method: "post",

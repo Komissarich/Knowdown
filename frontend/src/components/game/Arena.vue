@@ -303,7 +303,7 @@ onMounted(async () => {
         .catch(function (error) {
           console.log(error);
         });
-    }, 400);
+    }, 5000);
   }
 
   const zone = document.getElementById("joystick-zone");
