@@ -1,11 +1,17 @@
 package knowdown.user_service.dto;
 
-public class LoginRequest {
+public class RegisterRequest {
     private String username;
     private String email;
     private String password;
 
-    public LoginRequest() {}
+    public RegisterRequest() {}
+
+    public RegisterRequest(String username, String email, String password) {
+        this.username = username;
+        this.email = email;
+        this.password = password;
+    }
 
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
