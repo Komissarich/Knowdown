@@ -58,7 +58,7 @@ public class Lobby {
     }
     public Player FindPlayer(String username) {
         return this.lobbyPlayers.stream()
-                .filter(player_ -> "James".equals(player_.getUsername()))
+                .filter(player_ -> username.equals(player_.getUsername()))
                 .findAny()
                 .orElse(null);
     }

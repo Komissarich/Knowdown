@@ -5,15 +5,14 @@ public class Player {
     private int x;
     private int y;
     //статы персонажа
-    private float health;
-    private float move_speed;
-    private float attack_speed;
-    private float melee_power;
-    private float melee_range;
-    private float knockback_power;
-    private float vampirism;
-    private float heal_rate;
-    private float dodge_chance;
+    private double health = 75;
+    private double move_speed = 0.75;
+    private double attack_speed = 80;
+    private double melee_power = 20;
+    private double melee_range = 20;
+    private double knockback_power = 1.5;
+    private double knockback_friction= 0.95;
+
 
 
     public int getX() {
@@ -47,75 +46,60 @@ public class Player {
         this.username = username;
     }
 
-    public float getHealth() {
+    public double getHealth() {
         return health;
     }
 
-    public void setHealth(float health) {
+    public void setHealth(double health) {
         this.health = health;
     }
 
-    public float getMove_speed() {
+    public double getMove_speed() {
         return move_speed;
     }
 
-    public void setMove_speed(float move_speed) {
+    public void setMove_speed(double move_speed) {
         this.move_speed = move_speed;
     }
 
-    public float getAttack_speed() {
+    public double getAttack_speed() {
         return attack_speed;
     }
 
-    public void setAttack_speed(float attack_speed) {
+    public void setAttack_speed(double attack_speed) {
         this.attack_speed = attack_speed;
     }
 
-    public float getMelee_power() {
+    public double getMelee_power() {
         return melee_power;
     }
 
-    public void setMelee_power(float melee_power) {
+    public void setMelee_power(double melee_power) {
         this.melee_power = melee_power;
     }
 
-    public float getMelee_range() {
+    public double getMelee_range() {
         return melee_range;
     }
 
-    public void setMelee_range(float melee_range) {
+    public void setMelee_range(double melee_range) {
         this.melee_range = melee_range;
     }
 
-    public float getKnockback_power() {
+    public double getKnockback_power() {
         return knockback_power;
     }
 
-    public void setKnockback_power(float knockback_power) {
+    public void setKnockback_power(double knockback_power) {
         this.knockback_power = knockback_power;
     }
 
-    public float getVampirism() {
-        return vampirism;
+
+    public double getKnockback_friction() {
+        return knockback_friction;
     }
 
-    public void setVampirism(float vampirism) {
-        this.vampirism = vampirism;
-    }
-
-    public float getHeal_rate() {
-        return heal_rate;
-    }
-
-    public void setHeal_rate(float heal_rate) {
-        this.heal_rate = heal_rate;
-    }
-
-    public float getDodge_chance() {
-        return dodge_chance;
-    }
-
-    public void setDodge_chance(float dodge_chance) {
-        this.dodge_chance = dodge_chance;
+    public void setKnockback_friction(double knockback_friction) {
+        this.knockback_friction = knockback_friction;
     }
 }

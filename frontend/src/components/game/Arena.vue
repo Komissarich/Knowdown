@@ -1,7 +1,8 @@
 <template>
-  <div class="arena">
-    <canvas ref="canvas"></canvas>
+  <div class="arena-wrapper">
     <div id="joystick-zone" class="joystick-container"></div>
+    <canvas ref="canvas" class="arena-canvas"></canvas>
+
     <div class="button-container">
       <v-btn
         variant="elevated"
@@ -10,12 +11,21 @@
         width="100"
         height="100"
         @click="attack"
+        class="w-full h-full"
         icon-size="100"
         rounded="circle"
-        ><v-icon icon="mdi-sword" size="80"></v-icon
+        ><v-icon icon="mdi-sword" size="250%"></v-icon
       ></v-btn>
     </div>
   </div>
+
+  <v-dialog v-model="dialogVisible" max-width="600" persistent>
+    <v-card rounded="xl" elevation="24" class="pa-6">
+      <v-card-title class="text-h5 font-weight-bold text-center mb-6">
+        Победитель: {{ winner_name }}
+      </v-card-title>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup lang="ts">
@@ -29,6 +39,7 @@ import { Client } from "@stomp/stompjs";
 import { useUserStore } from "@/stores/user";
 import axios from "axios";
 import { consoleError } from "vuetify/lib/util/console.mjs";
+import router from "@/router/router";
 const canvas = useTemplateRef<HTMLCanvasElement>("canvas");
 let app: PIXI.Application | null = null;
 let joystick: any = null;
@@ -36,9 +47,15 @@ let player: Player;
 const userStore = useUserStore();
 const myPlayerName = userStore.username;
 const players = ref<Map<string, Player>>(new Map());
+const winner_name = ref("");
 const players_start = ref([]);
 let doneSetup = false;
 const route = useRoute();
+
+let arenaGraphics: PIXI.Graphics | null = null;
+let arena: Arena | null = null;
+const dialogVisible = ref(false);
+
 const client = new Client({
   brokerURL: "/ws/",
   debug: function (str) {
@@ -54,13 +71,12 @@ client.onStompError = function (frame) {
   console.error("Additional details:", frame.body);
 };
 client.onConnect = function (frame) {
-  console.log("Connected to STOMP broker!");
+  console.log("Connected to STOMP broker in arena!");
 
   client.subscribe(
     "/topic/arena/" + route.params.arena_id + "/positions",
     (message) => {
       const data = JSON.parse(message.body);
-      // console.log("data", data, myPlayerName);
       if (data.playerName !== myPlayerName) {
         let remotePlayer = players.value.get(data.playerName);
         // console.log("Changing animation of another player");
@@ -116,6 +132,16 @@ client.onConnect = function (frame) {
         let remotePlayer = players.value.get(data.target_username);
         remotePlayer.sprite.tint = 0xff0000;
         remotePlayer.hp -= data.damage;
+
+        if (remotePlayer.hp <= 0) {
+          remotePlayer.death();
+          players.value.delete(data.target_username);
+          if (players.value.size == 1) {
+            winner_name.value = players.value.keys().next().value;
+            dialogVisible.value = true;
+            setTimeout(() => router.push("/"), 8000);
+          }
+        }
         setTimeout(() => (remotePlayer.sprite.tint = 0xffffff), 200);
         remotePlayer.isKnocked = true;
         applyKnockback(
@@ -152,12 +178,15 @@ async function createPlayers() {
         0,
         players_start.value[i].username,
         "down",
-        1,
-        100
+        players_start.value[i].move_speed,
+        players_start.value[i].health,
+        players_start.value[i].melee_power,
+        players_start.value[i].knockback_power,
+        players_start.value[i].knockback_friction,
+        players_start.value[i].melee_range,
+        players_start.value[i].attack_speed
       );
-      console.log("Created Player", currentPlayer);
       let sprite = await currentPlayer.loadAnims();
-      console.log("Player sprite", sprite);
       app.stage.addChild(sprite);
       currentPlayer.updateSprite();
       client.publish({
@@ -186,10 +215,15 @@ async function createPlayers() {
         players_start.value[i].y,
         0,
         0,
-        myPlayerName,
+        players_start.value[i].username,
         "down",
-        1,
-        100
+        players_start.value[i].move_speed,
+        players_start.value[i].health,
+        players_start.value[i].melee_power,
+        players_start.value[i].knockback_power,
+        players_start.value[i].knockback_friction,
+        players_start.value[i].melee_range,
+        players_start.value[i].attack_speed
       );
 
       const sprite = await player.loadAnims();
@@ -213,7 +247,6 @@ async function createPlayers() {
 }
 
 function applyKnockback(target, attackerDirection, power) {
-  console.log("starting knockback", target, attackerDirection, power);
   let knockX = 0;
   let knockY = 0;
 
@@ -239,6 +272,7 @@ function applyKnockback(target, attackerDirection, power) {
 
 onMounted(async () => {
   if (!canvas.value) return;
+
   app = new PIXI.Application();
   await app.init({
     canvas: canvas.value,
@@ -248,74 +282,18 @@ onMounted(async () => {
     antialias: true,
   });
 
-  if (localStorage.getItem("hostedLobby") === route.params.arena_id) {
-    await axios({
-      method: "post",
-      url: "/api/lobby/" + route.params.arena_id + "/getPlayers",
-      params: {
-        lobbyId: route.params.arena_id,
-        username: myPlayerName,
-      },
-    })
-      .then(function (response) {
-        console.log(response.data);
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
-  }
-
-  const visualizeHitbox = new PIXI.Sprite(PIXI.Texture.WHITE);
-
-  visualizeHitbox.width = 40;
-  visualizeHitbox.height = 30;
-  visualizeHitbox.x = 400;
-  visualizeHitbox.y = 300;
-  visualizeHitbox.tint = 0xff00ff;
-  app.stage.addChild(visualizeHitbox);
-  const arena = new Arena(app.screen.width / 2, app.screen.height / 2, 250);
+  const arena = new Arena(400, 300, 250);
   const arenaGraphics = new PIXI.Graphics();
   arena.draw(arenaGraphics);
   app.stage.addChild(arenaGraphics);
-  const zone = document.getElementById("joystick-zone");
-  if (zone) {
-    joystick = nipplejs.create({
-      zone: zone,
-      mode: "semi",
-      color: "#00ff00",
-      catchDistance: 30,
-      size: 135,
-      threshold: 0.005,
-      restJoystick: true,
-      restOpacity: 0.5,
-      fadeTime: 100,
-      multitouch: false,
-    });
-    joystick.on("move", (evt: any, data: any) => {
-      const vx = data.vector.x;
-      const vy = data.vector.y;
-      const angle = data.angle.radian;
-      player.changeMovement(
-        Math.cos(angle) * 1.0,
-        Math.sin(angle) * 1.0,
-        true,
-        null,
-        vx,
-        vy
-      );
-      player.animationSpeed = 0.2;
-    });
 
-    joystick.on("end", async () => {
-      player.changeMovement(0, 0, false, 0, 0);
-      player.lastDirection = null;
-      player.stop();
-      player.animationSpeed = 0.05;
+  if (localStorage.getItem("hostedLobby") === route.params.arena_id) {
+    setTimeout(async () => {
       await axios({
         method: "post",
-        url: "/api/lobby/arena/" + route.params.arena_id + "/stop",
+        url: "/api/lobby/" + route.params.arena_id + "/getPlayers",
         params: {
-          arena_id: route.params.arena_id,
+          lobbyId: route.params.arena_id,
           username: myPlayerName,
         },
       })
@@ -325,6 +303,74 @@ onMounted(async () => {
         .catch(function (error) {
           console.log(error);
         });
+    }, 400);
+  }
+
+  const zone = document.getElementById("joystick-zone");
+  if (zone) {
+    joystick = nipplejs.create({
+      zone: zone,
+      mode: "static",
+      color: "#00ff00",
+      size: 150,
+      catchDistance: 40,
+      position: { left: "50%", top: "50%" },
+      threshold: 0.005,
+      restJoystick: true,
+      restOpacity: 1, // ← полностью видимый в покое
+      fadeTime: 0,
+      multitouch: false,
+    });
+    joystick.on("move", (evt: any, data: any) => {
+      if (!player.isDead) {
+        const isMoving = data.distance > 10; // порог, чтобы не было дерганья
+
+        if (isMoving) {
+          const angle = data.angle.radian;
+
+          // Полная скорость в направлении
+          const vx = Math.cos(angle);
+          const vy = Math.sin(angle);
+
+          player.changeMovement(
+            vx * 1.0, // фиксированная скорость
+            vy * 1.0,
+            true,
+            null,
+            vx,
+            vy
+          );
+          player.animationSpeed = 0.2;
+        } else {
+          // Если палочка почти в центре — стоп
+          player.changeMovement(0, 0, false, 0, 0);
+          player.stop();
+        }
+        player.animationSpeed = 0.2;
+      }
+    });
+
+    joystick.on("end", async () => {
+      if (!player.isDead) {
+        player.changeMovement(0, 0, false, 0, 0);
+        player.lastDirection = null;
+        player.stop();
+        player.animationSpeed = 0.05;
+        await axios({
+          method: "post",
+          url: "/api/lobby/arena/" + route.params.arena_id + "/stop",
+          params: {
+            arena_id: route.params.arena_id,
+            username: myPlayerName,
+          },
+        })
+          .then(function (response) {
+            console.log(response.data);
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+      }
     });
   }
 
@@ -341,8 +387,8 @@ onMounted(async () => {
         hpPercent > 0.5 ? 0x00ff00 : hpPercent > 0.2 ? 0xffaa00 : 0xff0000
       );
 
-      p.textName.x = p.sprite.x - 25;
-      p.textName.y = p.sprite.y - 30;
+      p.textName.x = p.sprite.x;
+      p.textName.y = p.sprite.y - 40;
 
       if (p.isKnocked) {
         if (Math.abs(p.vx) > 0.1 || Math.abs(p.vy) > 0.1) {
@@ -363,38 +409,11 @@ onMounted(async () => {
             p.isKnocked = false;
           }
         }
+        p.updateSprite();
+        arena.constrainPlayer(p);
       }
     });
-    if (player && player.hitbox && player.isAttacking) {
-      const hitboxBounds = new PIXI.Rectangle();
-      switch (player.direction) {
-        case "up":
-          hitboxBounds.set(player.x - 20, player.y - 20, 40, 30);
-          break;
-        case "down":
-          hitboxBounds.set(player.x - 20, player.y + 10, 40, 30);
-          break;
-        case "left":
-          hitboxBounds.set(player.x - 40, player.y - 10, 30, 40);
-          break;
-        case "right":
-          hitboxBounds.set(player.x + 10, player.y - 10, 30, 40);
-          break;
-      }
-      visualizeHitbox.x = hitboxBounds.x;
-      visualizeHitbox.y = hitboxBounds.y;
-    }
-    players.value.forEach((p) => {
-      if (Math.abs(p.vx) > 0.1 || Math.abs(p.vy) > 0.1) {
-        p.x += p.vx;
-        p.y += p.vy;
-        if (Math.abs(p.vx) < 0.1) p.vx = 0;
-        if (Math.abs(p.vy) < 0.1) p.vy = 0;
-      }
-
-      p.updateSprite();
-    });
-    if (player && player.movement.active) {
+    if (player && player.movement.active && !player.isDead) {
       player.move();
 
       client.publish({
@@ -418,63 +437,71 @@ onMounted(async () => {
   });
 });
 async function attack() {
-  player.animationSpeed = 0.2;
-  player.attack();
+  if (!player.isDead) {
+    player.animationSpeed = 0.2;
+    player.attack();
 
-  await axios({
-    method: "post",
-    url: "/api/lobby/arena/" + route.params.arena_id + "/attack",
-    params: {
-      arena_id: route.params.arena_id,
-      username: myPlayerName,
-    },
-  })
-    .then(function (response) {
-      console.log(response.data);
+    await axios({
+      method: "post",
+      url: "/api/lobby/arena/" + route.params.arena_id + "/attack",
+      params: {
+        arena_id: route.params.arena_id,
+        username: myPlayerName,
+      },
     })
-    .catch(function (error) {
-      console.log(error);
-    });
-
-  players.value.forEach(async (remotePlayer, name) => {
-    if (name === myPlayerName) return;
-    if (isInAttackRange(player, remotePlayer)) {
-      await axios({
-        method: "post",
-        url: "/api/lobby/arena/" + route.params.arena_id + "/receive_attack",
-        data: {
-          target_username: remotePlayer.name,
-          knockback_direction: player.direction,
-          knockback_power: player.knockback_power,
-          damage: player.damage,
-        },
-        params: {
-          arena_id: route.params.arena_id,
-        },
+      .then(function (response) {
+        console.log(response.data);
       })
-        .then(function (response) {
-          console.log(response.data);
+      .catch(function (error) {
+        console.log(error);
+      });
+
+    players.value.forEach(async (remotePlayer, name) => {
+      if (name === myPlayerName) return;
+      if (isInAttackRange(player, remotePlayer)) {
+        // player.hp +=
+        //   player.hp + player.vampirism > player.maxHp ? 0 : player.vampirism;
+        await axios({
+          method: "post",
+          url: "/api/lobby/arena/" + route.params.arena_id + "/receive_attack",
+          data: {
+            target_username: remotePlayer.name,
+            knockback_direction: player.direction,
+            knockback_power: player.knockback_power,
+            damage: player.damage,
+          },
+          params: {
+            arena_id: route.params.arena_id,
+          },
         })
-        .catch(function (error) {
-          console.log(error);
-        });
-    }
-  });
+          .then(function (response) {
+            console.log(response.data);
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+      }
+    });
+  }
 }
 
 function isInAttackRange(attacker, target) {
-  const range = 90;
+  const range = 35 + player.attack_range;
   const dx = target.x - attacker.x;
   const dy = target.y - attacker.y;
-  console.log(attacker, target, dx, dy);
+  // console.log(attacker, target, dx, dy);
   switch (attacker.direction) {
     case "up":
+      //уменьшить по y
       return dy < -10 && Math.abs(dx) < 20 && Math.abs(dy) < range;
     case "down":
+      //уменьшить по y
       return dy > 10 && Math.abs(dx) < 20 && Math.abs(dy) < range;
     case "left":
+      //уменьшить по x
       return dx < -10 && Math.abs(dy) < 20 && Math.abs(dx) < range;
     case "right":
+      //уменьшить по x
       return dx > 10 && Math.abs(dy) < 20 && Math.abs(dx) < range;
   }
   return false;
@@ -482,35 +509,47 @@ function isInAttackRange(attacker, target) {
 </script>
 
 <style scoped>
-.arena {
+.arena-wrapper {
   position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: #1099bb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible !important;
+}
+
+.arena-canvas {
   width: 800px;
   height: 600px;
-  margin: auto;
-}
-canvas {
-  position: absolute;
-
-  top: 0;
-  left: 0;
-  border: 1px solid #ccc;
+  max-width: 100vw;
+  max-height: 100vh;
+  object-fit: contain;
+  z-index: 1;
 }
 .joystick-container {
   position: absolute;
-  bottom: 40px;
-  left: 40px;
-  width: 200px;
-  height: 200px;
-  z-index: 10;
-}
+  bottom: max(20px, 5vh); /* минимум 20px, но не ближе 5% от низа */
+  left: max(20px, 5vw); /* минимум 20px, но не ближе 5% от левого края */
+  width: min(180px, 25vw); /* максимум 180px, но не больше 25% ширины */
+  height: min(180px, 25vw);
 
+  z-index: 9999 !important;
+  pointer-events: auto;
+}
 .button-container {
   position: absolute;
-  bottom: 40px;
-  right: 40px;
-  width: 120px;
-  height: 120 px;
+  bottom: 5vh;
+  bottom: max(20px, 5vh);
+  right: max(20px, 5vw);
+  width: min(120px, 18vw);
+  height: min(120px, 18vw);
+  max-width: 140px;
+  max-height: 140px;
   z-index: 10;
-  opacity: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

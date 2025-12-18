@@ -6,12 +6,27 @@ import {
   Text,
   Graphics,
 } from "pixi.js";
-import runImage from "./swordsman_run.png";
-import idleImage from "./swordsman_idle.png";
-import attackImage from "./swordsman_attack.png";
-
+import runImage from "./Swordsman_lvl2_Run_with_shadow.png";
+import idleImage from "./Swordsman_lvl2_Idle_with_shadow.png";
+import attackImage from "./Swordsman_lvl2_attack_with_shadow.png";
+import deathImage from "./Swordsman_lvl2_Death_with_shadow.png";
 export default class Player {
-  constructor(x, y, vx, vy, name, direction, speed, hp) {
+  constructor(
+    x,
+    y,
+    vx,
+    vy,
+    name,
+    direction,
+    speed,
+    hp,
+    damage,
+    knockback_power,
+    knockback_friction,
+    attack_range,
+    attack_speed,
+    vampirism
+  ) {
     this.name = name;
     this.x = x;
     this.vx = vx;
@@ -31,14 +46,18 @@ export default class Player {
     this.isAttacking = false;
     this.canAttack = true;
     this.hitbox = null;
-    this.damage = 25;
+    this.damage = damage;
     this.sprite = null;
     this.animationSpeed = 0.2;
     this.maxHp = hp;
     this.hp = hp;
-    this.knockback_power = 3;
-    this.knockback_friction = 0.9;
+    this.attack_range = attack_range;
+    this.attack_speed = 550 - attack_speed;
+    this.knockback_power = knockback_power;
+    this.knockback_friction = knockback_friction;
     this.isKnocked = false;
+    this.isDead = false;
+    this.vampirism = vampirism;
   }
 
   async loadAnims() {
@@ -114,14 +133,14 @@ export default class Player {
       },
     });
     nameText.zIndex = 100;
-    // nameText.anchor.set(0.5, 0.75);
+    nameText.anchor.set(0.5, 0.6);
     return nameText;
   }
   async setAnims() {
     this.idleTexture = await Assets.load(idleImage);
     this.runTexture = await Assets.load(runImage);
     this.attackTexture = await Assets.load(attackImage);
-
+    this.deathTexture = await Assets.load(deathImage);
     let idleAnim = this.getSprites(0, this.idleTexture, 11);
 
     let runDownAnim = this.getSprites(0, this.runTexture, 7);
@@ -137,6 +156,8 @@ export default class Player {
     let idleLeftAnim = this.getSprites(1, this.idleTexture, 11);
     let idleRightAnim = this.getSprites(2, this.idleTexture, 11);
     let idleUpAnim = this.getSprites(3, this.idleTexture, 3);
+
+    let deathAnim = this.getSprites(0, this.deathTexture, 6);
     let runAnims = new Map();
     runAnims.set("down", runDownAnim);
     runAnims.set("up", runUpAnim);
@@ -155,10 +176,13 @@ export default class Player {
     attackAnims.set("right", attackRightAnim);
     attackAnims.set("up", attackUpAnim);
 
+    let deathAnims = new Map();
+    deathAnims.set("default", deathAnim);
+
     this.anims.set("idle", idleAnims);
     this.anims.set("run", runAnims);
     this.anims.set("attack", attackAnims);
-
+    this.anims.set("death", deathAnims);
     let sprite = new AnimatedSprite(idleAnim);
     sprite.anchor.set(0.5);
     sprite.animationSpeed = this.animationSpeed;
@@ -185,7 +209,7 @@ export default class Player {
     this.movement.x = x;
     this.movement.y = y;
     if (status == true && this.direction !== this.lastDirection) {
-      this.lastDirection = this.direction; //0.2
+      this.lastDirection = this.direction;
       this.sprite.animationSpeed = this.animationSpeed;
       this.playRun();
     }
@@ -215,12 +239,11 @@ export default class Player {
       this.canAttack = true;
       this.stop();
       this.hitbox = null;
-    }, 500);
+    }, this.attack_speed);
   }
 
   playIdle() {
     this.sprite.textures = this.anims.get("idle").get(this.direction);
-    //0.05
     this.sprite.animationSpeed = this.animationSpeed;
     this.sprite.play();
   }
@@ -232,7 +255,6 @@ export default class Player {
 
   playAttack() {
     this.sprite.textures = this.anims.get("attack").get(this.direction);
-    //0.2
     this.sprite.animationSpeed = this.animationSpeed;
     this.sprite.play();
   }
@@ -244,5 +266,12 @@ export default class Player {
 
   getSprite() {
     return this.sprite;
+  }
+
+  death() {
+    this.sprite.textures = this.anims.get("death").get("default");
+    this.sprite.loop = false;
+    this.sprite.play();
+    this.isDead = true;
   }
 }

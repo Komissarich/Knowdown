@@ -86,30 +86,28 @@ public class LobbyService {
         }
         return players;
     }
-//    public void updradePlayerStats(String lobbyId, String username, Map<String, Float> upgradedStats) {
-//        Lobby lobby = lobbies.get(lobbyId);
-//        if (lobby == null) throw new IllegalArgumentException("Lobby not found");
-//
-//        Player player = lobbies.get(lobbyId).FindPlayer(username);
-//        if (player == null) throw new IllegalArgumentException("Player not found");
-//
-//        upgradedStats.forEach((statName, points) -> {
-//            if (points == null || points <= 0) return; // пропускаем нулевые
-//            float valueToAdd = points * 10f; // ← настрой под свой баланс (10 за очко)
-//            switch (statName) {
-//                case "health" -> player.setHealth(player.getHealth() + valueToAdd);
-//                case "move_speed" -> player.setMoveSpeed(player.getMoveSpeed() + valueToAdd);
-//                case "attack_speed" -> player.setAttackSpeed(player.getAttackSpeed() + valueToAdd);
-//                case "melee_power" -> player.setMeleePower(player.getMeleePower() + valueToAdd);
-//                case "melee_range" -> player.setMeleeRange(player.getMeleeRange() + valueToAdd);
-//                case "knockback_power" -> player.setKnockbackPower(player.getKnockbackPower() + valueToAdd);
-//                case "vampirism" -> player.setVampirism(player.getVampirism() + valueToAdd / 10f); // например, меньше рост
-//                case "heal_rate" -> player.setHealRate(player.getHealRate() + valueToAdd);
-//                case "dodge_chance" -> player.setDodgeChance(player.getDodgeChance() + valueToAdd / 100f); // шанс в долях
-//                default -> log.warn("Неизвестный стат: {}", statName);
-//            }
-//        });
-//    }
+    public void upgradePlayerStats(String lobbyId, String username, Map<String, Float> upgradedStats) {
+        Lobby lobby = lobbies.get(lobbyId);
+        if (lobby == null) throw new IllegalArgumentException("Lobby not found");
+
+        Player player = lobbies.get(lobbyId).FindPlayer(username);
+        if (player == null) throw new IllegalArgumentException("Player not found");
+
+        upgradedStats.forEach((statName, points) -> {
+            if (points == null || points <= 0) return;
+            double modificator = 1.5;
+            switch (statName) {
+                case "health" -> player.setHealth(player.getHealth() * modificator);
+                case "move_speed" -> player.setMove_speed(player.getMove_speed() * modificator);
+                case "attack_speed" -> player.setAttack_speed(player.getAttack_speed() * modificator);
+                case "melee_power" -> player.setMelee_power(player.getMelee_power() * modificator);
+                case "melee_range" -> player.setMelee_range(player.getMelee_range() * modificator);
+                case "knockback_power" -> player.setKnockback_power(player.getKnockback_power() * modificator);
+                case "knockback_friction" -> player.setKnockback_friction(player.getKnockback_friction() / modificator);
+                default -> System.out.println("Неизвестный стат");
+            }
+        });
+    }
 }
 
 

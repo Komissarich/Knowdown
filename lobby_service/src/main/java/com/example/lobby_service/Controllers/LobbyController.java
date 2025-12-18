@@ -102,7 +102,7 @@ public class LobbyController {
 //    @SendTo("/topic/lobby/{lobbyId}/finish_question")
     public String finish(@RequestParam String lobbyId) {
         System.out.println("finishing answer");
-      lobbyService.sendResults(lobbyId);
+        lobbyService.sendResults(lobbyId);
         return "sent results";
     }
 
@@ -154,11 +154,11 @@ public class LobbyController {
     public String upgradeStats(@RequestBody UpgradeRequest request) {
         System.out.println("going to upgrades");
         System.out.println(request);
-//        lobbyService.upgradePlayerStats(
-//                request.username(),
-//                request.lobbyId(),
-//                request.upgradedStats()
-//        );
+        lobbyService.upgradePlayerStats(
+                request.getLobbyId(),
+                request.getUsername(),
+                request.getUpgradedStats()
+        );
         return "upgraded";
     }
 

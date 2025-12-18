@@ -1,7 +1,7 @@
 <template>
   <div class="quiz-screen">
     <Quiztimer
-      :duration="3"
+      :duration="15"
       :start="!!question"
       @timeout="onTimeOut"
       :key="timerKey"
@@ -63,35 +63,38 @@
 
   <v-dialog v-model="dialogVisible" max-width="600" persistent>
     <v-card rounded="xl" elevation="24" class="pa-6">
-      <!-- Заголовок -->
       <v-card-title class="text-h5 font-weight-bold text-center mb-6">
         Результаты раунда
       </v-card-title>
+      <div class="results-list-container">
+        <v-list lines="three" class="mb-8 bg-transparent" z-index="300">
+          <v-list-item
+            v-for="[player, points] in sortedResults"
+            :key="player"
+            class="mb-3 rounded-lg"
+            :color="points > 0 ? 'primary' : 'grey'"
+          >
+            <template v-slot:prepend>
+              <v-avatar
+                size="48"
+                :color="points > 0 ? 'green' : 'grey-darken-2'"
+              >
+                <span class="text-white text-h5">{{
+                  getPosition(player)
+                }}</span>
+              </v-avatar>
+            </template>
 
-      <!-- Список игроков и очков -->
-      <v-list lines="two" class="mb-8 bg-transparent">
-        <v-list-item
-          v-for="[player, points] in sortedResults"
-          :key="player"
-          class="mb-3 rounded-lg"
-          :color="points > 0 ? 'primary' : 'grey'"
-        >
-          <template v-slot:prepend>
-            <v-avatar size="48" :color="points > 0 ? 'green' : 'grey-darken-2'">
-              <span class="text-white text-h5">{{ getPosition(player) }}</span>
-            </v-avatar>
-          </template>
+            <v-list-item-title class="text-h6 font-weight-medium">
+              {{ player }}
+            </v-list-item-title>
 
-          <v-list-item-title class="text-h6 font-weight-medium">
-            {{ player }}
-          </v-list-item-title>
-
-          <v-list-item-subtitle class="text-h6 font-weight-bold text-primary">
-            +{{ points }} очков
-          </v-list-item-subtitle>
-        </v-list-item>
-      </v-list>
-
+            <v-list-item-subtitle class="text-h6 font-weight-bold text-primary">
+              +{{ points }} очков
+            </v-list-item-subtitle>
+          </v-list-item>
+        </v-list>
+      </div>
       <div v-if="playerPoints > 0">
         <v-card-title class="text-h6 font-weight-bold text-center mb-4">
           Прокачай персонажа (+{{ playerPoints }} очков)
@@ -164,13 +167,16 @@ const current_questions = ref([]);
 const stats = ref([
   { name: "health", label: "Здоровье", value: 0, max: 30 },
   { name: "move_speed", label: "Скорость движения", value: 0, max: 20 },
-  { name: "attack_speed", label: "Скорость атаки", value: 0, max: 10 },
+  { name: "attack_speed", label: "Скорость атаки", value: 0, max: 20 },
   { name: "melee_power", label: "Сила удара", value: 0, max: 30 },
   { name: "melee_range", label: "Дальность удара", value: 0, max: 20 },
   { name: "knockback_power", label: "Сила отбрасывания", value: 0, max: 20 },
-  { name: "vampirism", label: "Вампиризм", value: 0, max: 5 },
-  { name: "heal_rate", label: "Регенерация", value: 0, max: 20 },
-  { name: "dodge_chance", label: "Шанс уклонения", value: 0, max: 15 },
+  {
+    name: "knockback_friction",
+    label: "Сопротивление отталкиванию",
+    value: 0,
+    max: 20,
+  },
 ]);
 
 const getAnswerColor = (i) => {
@@ -258,6 +264,36 @@ client.onConnect = function (frame) {
       }
     );
   }, 100);
+
+  setTimeout(() => {
+    client.subscribe(
+      "/topic/lobby/" + route.params.quiz_id + "/finish_quiz",
+      (message) => {
+        const data = JSON.parse(message.body);
+        console.log("finishing");
+        if (data.type === "QUESTION_RESULTS") {
+          question_index.value += 1;
+          showResults.value = true;
+
+          selectedAnswer.value = null;
+          roundResults.value = data.points;
+
+          playerPoints.value = data.points[userStore.username];
+          progress.value = 100;
+          timer = setInterval(() => {
+            progress.value -= 100 / 150;
+            if (progress.value <= 0) {
+              showResults.value = false;
+              waitTimer.value = false;
+              setQuestion();
+              timerKey.value += 1;
+              clearInterval(timer);
+            }
+          }, 100);
+        }
+      }
+    );
+  }, 100);
 };
 client.activate();
 
@@ -303,20 +339,7 @@ function setQuestion() {
       );
     }
     console.log("RIGHT ANSWER INDEX", correctAnswerIndex.value);
-    console.log(question.value);
   } else {
-    const upgradedStats = {
-      health: stats.value[0].value,
-      move_speed: stats.value[1].value,
-      attack_speed: stats.value[2].value,
-      melee_power: stats.value[3].value,
-      melee_range: stats.value[4].value,
-      knockback_power: stats.value[5].value,
-      vampirism: stats.value[6].value,
-      heal_rate: stats.value[7].value,
-      dodge_chance: stats.value[8].value,
-    };
-
     axios({
       method: "post",
       url: "/api/lobby/upgrade",
@@ -330,15 +353,13 @@ function setQuestion() {
           melee_power: stats.value[3].value,
           melee_range: stats.value[4].value,
           knockback_power: stats.value[5].value,
-          vampirism: stats.value[6].value,
-          heal_rate: stats.value[7].value,
-          dodge_chance: stats.value[8].value,
+          knockback_friction: stats.value[6].value,
         },
       },
     })
       .then(function (response) {
         console.log(response.data);
-        localStorage.setItem("move_speed", stats.value[1].value * 2);
+
         router.push({
           path: "/arena/" + route.params.quiz_id,
           params: { arena_id: route.params.quiz_id },
@@ -413,6 +434,7 @@ const onTimeOut = () => {
   padding: 40px 20px;
   box-sizing: border-box;
   position: relative;
+  overflow: hidden;
 }
 
 .quiz-content {
@@ -433,5 +455,30 @@ const onTimeOut = () => {
 
 .cursor-pointer {
   cursor: pointer;
+}
+.results-list-container {
+  max-height: 50vh; /* на десктопе — половина экрана */
+  overflow-y: auto; /* скролл только внутри списка */
+  padding-right: 8px; /* место для скроллбара */
+}
+
+/* На мобилке — список почти на весь диалог */
+@media (max-width: 960px) {
+  .results-list-container {
+    max-height: 60vh; /* больше места для списка */
+  }
+
+  .v-list-item {
+    min-height: 80px; /* выше строки */
+    padding: 12px;
+  }
+
+  .v-list-item-title {
+    font-size: 1.4rem !important;
+  }
+
+  .v-list-item-subtitle {
+    font-size: 1.6rem !important;
+  }
 }
 </style>
