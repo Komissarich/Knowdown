@@ -339,7 +339,7 @@ function setQuestion() {
       );
     }
     console.log("RIGHT ANSWER INDEX", correctAnswerIndex.value);
-    console.log("QUESTION", question);
+    console.log("QUESTION", question.value);
   } else {
     axios({
       method: "post",
@@ -376,7 +376,12 @@ function selectAnswer(i) {
   if (!showResults.value && selectedAnswer.value === null) {
     selectedAnswer.value = i;
     console.log("SELECT", selectedAnswer.value);
-    if (question.value.correct === question.value.answers[i]) {
+    if (
+      (question.value.correct === question.value.answers[i] &&
+        question.value.type == "MULTIPLE_CHOICE") ||
+      (question.value.correct !== question.value.answers[i] &&
+        question.value.type == "TRUE_FALSE")
+    ) {
       console.log("CORRECT");
 
       axios({
