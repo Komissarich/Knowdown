@@ -346,14 +346,14 @@ onMounted(async () => {
 
         if (isMoving) {
           const angle = data.angle.radian;
-          const pixelRatioCompensation =
-            window.devicePixelRatio > 1 ? window.devicePixelRatio : 1;
+
+          let mobileCompensation = window.innerWidth <= 768 ? 2.0 : 1.0;
           const vx = Math.cos(angle);
           const vy = Math.sin(angle);
 
           player.changeMovement(
-            vx * 1.0 * pixelRatioCompensation,
-            vy * 1.0 * pixelRatioCompensation,
+            vx * 1.0 * mobileCompensation,
+            vy * 1.0 * mobileCompensation,
             true,
             null,
             vx,
