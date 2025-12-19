@@ -305,6 +305,7 @@ onMounted(async () => {
           lobbyId: route.params.arena_id,
           username: myPlayerName,
         },
+        timeout: 8000,
       })
         .then(function (response) {
           console.log(response.data);
