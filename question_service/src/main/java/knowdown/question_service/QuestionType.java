@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum QuestionType {
-    MULTIPLE_CHOICE;
-    // TRUE_FALSE;
+    MULTIPLE_CHOICE,
+    TRUE_FALSE;
 
 
     @JsonCreator
