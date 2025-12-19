@@ -512,7 +512,7 @@ async function attack() {
 }
 
 function isInAttackRange(attacker, target) {
-  const range = 35 + player.attack_range;
+  const range = 20 + player.attack_range;
   const dx = target.x - attacker.x;
   const dy = target.y - attacker.y;
   // console.log(attacker, target, dx, dy);

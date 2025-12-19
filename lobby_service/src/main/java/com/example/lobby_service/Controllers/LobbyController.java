@@ -212,4 +212,8 @@ public class LobbyController {
         );
     }
 
+    public static <Request, Response> void logHttp(String method, String url, Request requestBody, ResponseEntity<Response> response) {
+        logHttp(method, url, requestBody, response);
+    }
+
 }
