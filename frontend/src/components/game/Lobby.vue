@@ -31,7 +31,7 @@
             <hr />
             Link:
             <a href=""
-              >https://knowdown/game/lobby/{{ route.params.lobby_id }}</a
+              >http://87.228.89.76/game/lobby/{{ route.params.lobby_id }}</a
             >
             <v-img
               :src="`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${route.params.lobby_id}`"
@@ -228,6 +228,7 @@ async function playGame() {
           data: {
             categories: chips.value.map((cat) => map.get(cat) || cat),
             amount: parseInt(questionCount.value),
+            types: "MULTIPLE_CHOICE",
           },
           params: {
             lobbyId: route.params.lobby_id,
