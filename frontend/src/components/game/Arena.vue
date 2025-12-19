@@ -348,7 +348,7 @@ onMounted(async () => {
           const angle = data.angle.radian;
 
           let mobileCompensation = window.innerWidth <= 768 ? 2.0 : 1.0;
-          if (window.innerHeight > window.innerWidth) {
+          if (window.innerWidth > window.innerHeight) {
             mobileCompensation *= 2; // дополнительно для портрета
           }
           const vx = Math.cos(angle);
