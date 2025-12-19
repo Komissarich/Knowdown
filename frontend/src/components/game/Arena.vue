@@ -346,14 +346,20 @@ onMounted(async () => {
 
         if (isMoving) {
           const angle = data.angle.radian;
-
+          const pixelRatioCompensation =
+            window.devicePixelRatio > 1 ? window.devicePixelRatio : 1;
           const vx = Math.cos(angle);
           const vy = Math.sin(angle);
-          if (window.devicePixelRatio > 1) {
-            player.changeMovement(vx * 1.0, vy * 1.0, true, null, vx, vy);
-          } else {
-            player.changeMovement(vx * 1.5, vy * 1.5, true, null, vx, vy);
-          }
+
+          player.changeMovement(
+            vx * 1.0 * pixelRatioCompensation,
+            vy * 1.0 * pixelRatioCompensation,
+            true,
+            null,
+            vx,
+            vy
+          );
+
           player.animationSpeed = 0.2;
         } else {
           // Если палочка почти в центре — стоп
