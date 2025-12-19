@@ -342,26 +342,21 @@ onMounted(async () => {
     });
     joystick.on("move", (evt: any, data: any) => {
       if (!player.isDead) {
-        // const isMoving = data.distance > 10;
-        const containerSize = Math.min(zone.clientWidth, zone.clientHeight);
-        const threshold = containerSize * 0.1; // 10% от размера джойстика
+        const isMoving = data.distance > 5;
 
-        const isMoving = data.distance > threshold;
         if (isMoving) {
           const angle = data.angle.radian;
-          let speedMultiplier = 1;
-          if (window.devicePixelRatio > 1) {
-            speedMultiplier = 1.5; // для Retina
-          }
+
+          let mobileCompensation = window.innerWidth <= 768 ? 2.0 : 1.0;
           if (window.innerHeight > window.innerWidth) {
-            speedMultiplier *= 1.3; // дополнительно для портрета
+            mobileCompensation *= 2; // дополнительно для портрета
           }
           const vx = Math.cos(angle);
           const vy = Math.sin(angle);
 
           player.changeMovement(
-            vx * 1.0 * speedMultiplier,
-            vy * 1.0 * speedMultiplier,
+            vx * 1.0 * mobileCompensation,
+            vy * 1.0 * mobileCompensation,
             true,
             null,
             vx,
