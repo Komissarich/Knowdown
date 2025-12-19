@@ -15,6 +15,7 @@ export const useUserStore = defineStore(
       await axios
         .post("/api/auth/register", {
           username: name,
+          email: email,
           password: password,
         })
         .then(function (response) {
