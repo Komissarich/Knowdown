@@ -313,6 +313,7 @@ onMounted(async () => {
         })
         .catch(function (error) {
           console.log(error);
+          dialogVisible2.value = false;
           alert(
             "Ошибка: " + error.message + "\nСтатус: " + error.response?.status
           );
