@@ -102,6 +102,7 @@ client.onConnect = function (frame) {
         const data = JSON.parse(message.body);
         console.log("Get starting positions: ", data);
         players_start.value = data;
+        dialogVisible2.value = false;
         await createPlayers();
       }
     );
@@ -297,33 +298,31 @@ onMounted(async () => {
   app.stage.addChild(arenaGraphics);
   dialogVisible2.value = true;
   if (localStorage.getItem("hostedLobby") === route.params.arena_id) {
-    setTimeout(() => {
-      console.log("Таймер сработал — закрываю диалог");
-      dialogVisible2.value = false;
-    }, 5000);
-    try {
-      await axios({
-        method: "post",
-        url: "/api/lobby/" + route.params.arena_id + "/getPlayers",
-        params: {
-          lobbyId: route.params.arena_id,
-          username: myPlayerName,
-        },
-        timeout: 8000,
-      })
-        .then(function (response) {
-          console.log(response.data);
-          dialogVisible2.value = false;
+    setTimeout(async () => {
+      try {
+        await axios({
+          method: "post",
+          url: "/api/lobby/" + route.params.arena_id + "/getPlayers",
+          params: {
+            lobbyId: route.params.arena_id,
+            username: myPlayerName,
+          },
+          timeout: 8000,
         })
-        .finally(() => {
-          alert("finally ended");
-          dialogVisible2.value = false;
-        });
-    } catch (error) {
-      console.log(error);
-      dialogVisible2.value = false;
-      alert("Ошибка: " + error.message + "\nСтатус: " + error.response?.status);
-    }
+          .then(function (response) {
+            console.log(response.data);
+            dialogVisible2.value = false;
+          })
+          .finally(() => {
+            //alert("finally ended");
+            dialogVisible2.value = false;
+          });
+      } catch (error) {
+        console.log(error);
+        dialogVisible2.value = false;
+        //
+      }
+    }, 5000);
   }
 
   const zone = document.getElementById("joystick-zone");

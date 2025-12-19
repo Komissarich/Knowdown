@@ -338,7 +338,7 @@ function setQuestion() {
         current_questions.value[question_index.value].correctAnswer
       );
     }
-    console.log("RIGHT ANSWER INDEX", correctAnswerIndex.value);
+    // console.log("RIGHT ANSWER INDEX", correctAnswerIndex.value);
     console.log("QUESTION", question.value);
   } else {
     axios({
