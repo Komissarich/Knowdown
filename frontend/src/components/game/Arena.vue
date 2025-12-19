@@ -342,13 +342,16 @@ onMounted(async () => {
     });
     joystick.on("move", (evt: any, data: any) => {
       if (!player.isDead) {
-        const isMoving = data.distance > 5;
+        const isMoving = data.distance > 10;
 
         if (isMoving) {
           const angle = data.angle.radian;
 
           let mobileCompensation = window.innerWidth <= 768 ? 2.0 : 1.0;
-          if (window.innerWidth > window.innerHeight) {
+          if (
+            window.innerWidth > window.innerHeight &&
+            window.innerWidth <= 768
+          ) {
             mobileCompensation *= 2; // дополнительно для портрета
           }
           const vx = Math.cos(angle);
