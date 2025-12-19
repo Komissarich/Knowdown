@@ -310,7 +310,14 @@ onMounted(async () => {
           console.log(response.data);
           dialogVisible2.value = false;
         })
+        .catch(function (error) {
+          console.log(error);
+          alert(
+            "Ошибка: " + error.message + "\nСтатус: " + error.response?.status
+          );
+        })
         .finally(() => {
+          alert("finally ended");
           dialogVisible2.value = false;
         });
     }, 5000);
