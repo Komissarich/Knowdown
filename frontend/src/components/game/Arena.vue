@@ -297,7 +297,11 @@ onMounted(async () => {
   app.stage.addChild(arenaGraphics);
   dialogVisible2.value = true;
   if (localStorage.getItem("hostedLobby") === route.params.arena_id) {
-    setTimeout(async () => {
+    setTimeout(() => {
+      console.log("Таймер сработал — закрываю диалог");
+      dialogVisible2.value = false;
+    }, 5000);
+    try {
       await axios({
         method: "post",
         url: "/api/lobby/" + route.params.arena_id + "/getPlayers",
@@ -311,18 +315,15 @@ onMounted(async () => {
           console.log(response.data);
           dialogVisible2.value = false;
         })
-        .catch(function (error) {
-          console.log(error);
-          dialogVisible2.value = false;
-          alert(
-            "Ошибка: " + error.message + "\nСтатус: " + error.response?.status
-          );
-        })
         .finally(() => {
           alert("finally ended");
           dialogVisible2.value = false;
         });
-    }, 5000);
+    } catch (error) {
+      console.log(error);
+      dialogVisible2.value = false;
+      alert("Ошибка: " + error.message + "\nСтатус: " + error.response?.status);
+    }
   }
 
   const zone = document.getElementById("joystick-zone");
