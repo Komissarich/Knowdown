@@ -6,13 +6,12 @@ public class Player {
     private int y;
     //статы персонажа
     private double health = 75;
-    private double move_speed = 0.75;
+    private double move_speed = 1;
     private double attack_speed = 80;
     private double melee_power = 20;
     private double melee_range = 20;
     private double knockback_power = 1.5;
     private double knockback_friction= 0.95;
-
 
 
     public int getX() {
