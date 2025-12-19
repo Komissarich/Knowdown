@@ -14,64 +14,63 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
-  <v-parallax src="https://cdn.vuetifyjs.com/images/parallax/material.jpg">
-    <div class="d-flex justify-center align-center" style="height: 60vh">
-      <VSheet width="350" height="485" :elevation="16">
-        <VForm fast-fail ref="form" @submit.prevent="submit">
-          <VTextField
-            class="mt-10 mx-auto"
-            width="320"
-            v-model="userName"
-            :rules="userNameRules"
-            label="Username"
-            style="min-width: 50px; display: block"
-          ></VTextField>
 
-          <VTextField
-            class="mx-auto"
-            width="320"
-            v-model="userEmail"
-            :rules="emailRules"
-            style="min-width: 50px; display: block"
-            label="Email"
-          ></VTextField>
+  <div class="d-flex justify-center align-center" style="height: 60vh">
+    <VSheet width="350" height="485" :elevation="16">
+      <VForm fast-fail ref="form" @submit.prevent="submit">
+        <VTextField
+          class="mt-10 mx-auto"
+          width="320"
+          v-model="userName"
+          :rules="userNameRules"
+          label="Username"
+          style="min-width: 50px; display: block"
+        ></VTextField>
 
-          <VTextField
-            class="mx-auto"
-            width="320"
-            v-model="userPassword"
-            :rules="passwordRules"
-            style="min-width: 50px; display: block"
-            label="Password"
-          ></VTextField>
+        <VTextField
+          class="mx-auto"
+          width="320"
+          v-model="userEmail"
+          :rules="emailRules"
+          style="min-width: 50px; display: block"
+          label="Email"
+        ></VTextField>
 
-          <VBtn
-            :loading="loading"
-            class="mt-2 mx-auto"
-            color="green-lighten-1"
-            text="Register"
-            type="submit"
-            style="min-width: 140px; display: block"
-            rounded="lg"
-            block
-          ></VBtn>
-        </VForm>
-        <div class="d-flex flex-column justify-center align-center">
-          <p class="ma-4">Already have an account?</p>
-          <VBtn
-            class="text-none mb-4"
-            color="indigo-darken-3"
-            variant="flat"
-            style="min-width: 140px"
-            rounded="lg"
-            @click="router.push('/auth/login')"
-          >
-            LOG IN
-          </VBtn>
-        </div>
-      </VSheet>
-    </div>
-  </v-parallax>
+        <VTextField
+          class="mx-auto"
+          width="320"
+          v-model="userPassword"
+          :rules="passwordRules"
+          style="min-width: 50px; display: block"
+          label="Password"
+        ></VTextField>
+
+        <VBtn
+          :loading="loading"
+          class="mt-2 mx-auto"
+          color="green-lighten-1"
+          text="Register"
+          type="submit"
+          style="min-width: 140px; display: block"
+          rounded="lg"
+          block
+        ></VBtn>
+      </VForm>
+      <div class="d-flex flex-column justify-center align-center">
+        <p class="ma-4">Already have an account?</p>
+        <VBtn
+          class="text-none mb-4"
+          color="indigo-darken-3"
+          variant="flat"
+          style="min-width: 140px"
+          rounded="lg"
+          @click="router.push('/auth/login')"
+        >
+          LOG IN
+        </VBtn>
+      </div>
+    </VSheet>
+  </div>
 </template>
 
 <script setup>
