@@ -26,6 +26,14 @@
       </v-card-title>
     </v-card>
   </v-dialog>
+
+  <v-dialog v-model="dialogVisible2" max-width="600" persistent>
+    <v-card rounded="xl" elevation="24" class="pa-6">
+      <v-card-title class="text-h5 font-weight-bold text-center mb-6">
+        Подождите загрузку
+      </v-card-title>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup lang="ts">
@@ -55,7 +63,7 @@ const route = useRoute();
 let arenaGraphics: PIXI.Graphics | null = null;
 let arena: Arena | null = null;
 const dialogVisible = ref(false);
-
+const dialogVisible2 = ref(false);
 const client = new Client({
   brokerURL: "/ws/",
   debug: function (str) {
@@ -287,7 +295,7 @@ onMounted(async () => {
   const arenaGraphics = new PIXI.Graphics();
   arena.draw(arenaGraphics);
   app.stage.addChild(arenaGraphics);
-
+  dialogVisible2.value = true;
   if (localStorage.getItem("hostedLobby") === route.params.arena_id) {
     setTimeout(async () => {
       await axios({
@@ -300,6 +308,7 @@ onMounted(async () => {
       })
         .then(function (response) {
           console.log(response.data);
+          dialogVisible2.value = false;
         })
         .catch(function (error) {
           console.log(error);
@@ -318,29 +327,21 @@ onMounted(async () => {
       position: { left: "50%", top: "50%" },
       threshold: 0.005,
       restJoystick: true,
-      restOpacity: 1, // ← полностью видимый в покое
+      restOpacity: 1,
       fadeTime: 0,
       multitouch: false,
     });
     joystick.on("move", (evt: any, data: any) => {
       if (!player.isDead) {
-        const isMoving = data.distance > 10; // порог, чтобы не было дерганья
+        const isMoving = data.distance > 10;
 
         if (isMoving) {
           const angle = data.angle.radian;
 
-          // Полная скорость в направлении
           const vx = Math.cos(angle);
           const vy = Math.sin(angle);
 
-          player.changeMovement(
-            vx * 1.0, // фиксированная скорость
-            vy * 1.0,
-            true,
-            null,
-            vx,
-            vy
-          );
+          player.changeMovement(vx * 1.0, vy * 1.0, true, null, vx, vy);
           player.animationSpeed = 0.2;
         } else {
           // Если палочка почти в центре — стоп
