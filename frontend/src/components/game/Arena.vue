@@ -350,7 +350,7 @@ onMounted(async () => {
           let mobileCompensation = window.innerWidth <= 768 ? 2.0 : 1.0;
           if (
             window.innerWidth > window.innerHeight &&
-            window.innerWidth <= 768
+            window.innerWidth <= 1300
           ) {
             mobileCompensation *= 2; // дополнительно для портрета
           }
