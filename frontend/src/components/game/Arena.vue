@@ -310,8 +310,8 @@ onMounted(async () => {
           console.log(response.data);
           dialogVisible2.value = false;
         })
-        .catch(function (error) {
-          console.log(error);
+        .finally(() => {
+          dialogVisible2.value = false;
         });
     }, 5000);
   }
